@@ -1,0 +1,25 @@
+{
+  "name": "socket-maze",
+  "version": "1.0.0",
+  "description": "socket maze game",
+  "main": "server.js",
+  "dependencies": {
+    "socket.io": "^1.3.6",
+    "express": "^4.13.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raurir/socket-maze.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/raurir/socket-maze/issues"
+  },
+  "homepage": "https://github.com/raurir/socket-maze#readme"
+}
