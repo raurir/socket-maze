@@ -1,0 +1,51 @@
+<html>
+<body>
+<style>
+body { margin:0; padding:0; }
+canvas { border: 1px solid black; }
+</style>
+<canvas id='c'></canvas>
+<div id='messages'></div>
+<input id='m'></input>
+<button id="send">Send</button>
+
+
+
+<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+var con = console;
+
+var sw = 200, sh = 200;
+var ctx = $("#c")[0].getContext("2d");
+$("#c").bind("mousemove", function(e) {
+  var x = e.clientX, y = e.clientY;
+  socket.emit('drawn', {x: x, y: y});
+})
+
+var socket = io({monkeys: true});
+$('#send').click(function(){
+  socket.emit('chat message', $('#m').val());
+  $('#m').val('');
+  return false;
+});
+
+socket.on('welcome', function(msg){
+  $('#messages').append($('<li>').text(msg));
+});
+
+socket.on('chat message', function(msg){
+  $('#messages').append($('<li>').text(msg));
+});
+
+socket.on('drawn', function(msg){
+  var p = 10;
+  ctx.fillStyle = msg.colour;
+  ctx.fillRect(msg.x - p / 2, msg.y - p / 2, p, p);
+});
+
+</script>
+
+</body>
+
+</html>
