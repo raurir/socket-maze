@@ -15,7 +15,7 @@ io.on('connection', function(socket){
     colour: colour
   }
 
-  socket.emit('welcome', connections[id]);
+  socket.emit('welcome', connections[id].name);
 
   console.log('a user connected', id);
 

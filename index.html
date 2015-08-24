@@ -6,72 +6,63 @@ canvas { border: 1px solid black; }
 </style>
 <canvas id='c'></canvas>
 <div id='messages'></div>
-<input id='m'></input>
+<input type="text" id="m">dfd</input>
 <button id="send">Send</button>
 <div id="output"></button>
 
-
-
 <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
 var con = console;
 
 
 function log(msg) {
-  $("#output").text(msg);
+  document.getElementById("output").innerHTML = msg;
 }
 
 var isInteracting = false;
 var sw = 200, sh = 200;
-var ctx = $("#c")[0].getContext("2d");
-$("#c").bind("mousemove", function(e) {
+var canvas = document.getElementById("c")
+var ctx = canvas.getContext("2d");
+
+function listen(target, eventNames, callback) {
+  for (var i = 0; i < eventNames.length; i++) {
+    target.addEventListener(eventNames[i], callback);
+  }
+}
+
+listen(canvas, ["mousedown", "touchstart"], function(e) {
+  e.preventDefault();
+  isInteracting = true;
+});
+listen(canvas, ["mousemove", "touchmove"], function(e) {
+  e.preventDefault();
+  if (e.changedTouches && e.changedTouches[0]) e = e.changedTouches[0];
   draw(e);
 });
-$("#c").bind("touchmove", function(e) {
-  e.preventDefault();
-  draw(e.changedTouches[0]);
-  log("move:" + [e.clientX, e.clienY]);
-});
-$("#c").bind("mousedown", function(e) {
-  isInteracting = true;
-});
-$("#c").bind("mouseup", function(e) {
-  isInteracting = false;
-});
-$("#c").bind("touchstart", function(e) {
-  e.preventDefault();
-  isInteracting = true;
-  log("start");
-});
-$("#c").bind("touchend", function(e) {
+listen(canvas, ["mouseup", "touchend"], function(e) {
   e.preventDefault();
   isInteracting = false;
-  log("end");
 });
+listen(document.getElementById("send"), ["click"], function(e) {
+  socket.emit('chat message', document.getElementById("m").value);
+  document.getElementById("m").value = "";
+});
+
+
 function draw(e) {
   if (isInteracting) {
     var x = e.clientX, y = e.clientY;
     socket.emit('drawn', {x: x, y: y});
   }
 }
-
+function msg(msg) {
+  document.getElementById("messages").innerHTML += msg + "<br>";
+}
 
 var socket = io();
-$('#send').click(function(){
-  socket.emit('chat message', $('#m').val());
-  $('#m').val('');
-  return false;
-});
 
-socket.on('welcome', function(msg){
-  $('#messages').append($('<li>').text(msg));
-});
-
-socket.on('chat message', function(msg){
-  $('#messages').append($('<li>').text(msg));
-});
-
+socket.on('welcome', msg);
+socket.on('chat message', msg);
 socket.on('drawn', function(msg){
   var p = 10;
   ctx.fillStyle = msg.colour;
