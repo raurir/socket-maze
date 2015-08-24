@@ -16,14 +16,36 @@ canvas { border: 1px solid black; }
 <script>
 var con = console;
 
+var isInteracting = false;
 var sw = 200, sh = 200;
 var ctx = $("#c")[0].getContext("2d");
 $("#c").bind("mousemove", function(e) {
-  var x = e.clientX, y = e.clientY;
-  socket.emit('drawn', {x: x, y: y});
-})
+  draw(e);
+});
+$("#c").bind("touchmove", function(e) {
+  draw(e.changedTouches[0]);
+});
+$("#c").bind("mousedown", function(e) {
+  isInteracting = true;
+});
+$("#c").bind("mouseup", function(e) {
+  isInteracting = false;
+});
+$("#c").bind("touchstart", function(e) {
+  isInteracting = true;
+});
+$("#c").bind("touchend", function(e) {
+  isInteracting = false;
+});
+function draw(e) {
+  if (isInteracting) {
+    var x = e.clientX, y = e.clientY;
+    socket.emit('drawn', {x: x, y: y});
+  }
+}
 
-var socket = io({monkeys: true});
+
+var socket = io();
 $('#send').click(function(){
   socket.emit('chat message', $('#m').val());
   $('#m').val('');
