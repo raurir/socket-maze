@@ -8,6 +8,7 @@ canvas { border: 1px solid black; }
 <div id='messages'></div>
 <input id='m'></input>
 <button id="send">Send</button>
+<div id="output"></button>
 
 
 
@@ -15,6 +16,11 @@ canvas { border: 1px solid black; }
 <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
 var con = console;
+
+
+function log(msg) {
+  $("#output").text(msg);
+}
 
 var isInteracting = false;
 var sw = 200, sh = 200;
@@ -25,6 +31,7 @@ $("#c").bind("mousemove", function(e) {
 $("#c").bind("touchmove", function(e) {
   e.preventDefault();
   draw(e.changedTouches[0]);
+  log("move:" + [e.clientX, e.clienY]);
 });
 $("#c").bind("mousedown", function(e) {
   isInteracting = true;
@@ -35,10 +42,12 @@ $("#c").bind("mouseup", function(e) {
 $("#c").bind("touchstart", function(e) {
   e.preventDefault();
   isInteracting = true;
+  log("start");
 });
 $("#c").bind("touchend", function(e) {
   e.preventDefault();
   isInteracting = false;
+  log("end");
 });
 function draw(e) {
   if (isInteracting) {
