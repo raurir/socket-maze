@@ -11,65 +11,9 @@ canvas { border: 1px solid black; }
 <div id="output"></button>
 
 <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-<script>
-var con = console;
-
-
-function log(msg) {
-  document.getElementById("output").innerHTML = msg;
-}
-
-var isInteracting = false;
-var sw = 200, sh = 200;
-var canvas = document.getElementById("c")
-var ctx = canvas.getContext("2d");
-
-function listen(target, eventNames, callback) {
-  for (var i = 0; i < eventNames.length; i++) {
-    target.addEventListener(eventNames[i], callback);
-  }
-}
-
-listen(canvas, ["mousedown", "touchstart"], function(e) {
-  e.preventDefault();
-  isInteracting = true;
-});
-listen(canvas, ["mousemove", "touchmove"], function(e) {
-  e.preventDefault();
-  if (e.changedTouches && e.changedTouches[0]) e = e.changedTouches[0];
-  draw(e);
-});
-listen(canvas, ["mouseup", "touchend"], function(e) {
-  e.preventDefault();
-  isInteracting = false;
-});
-listen(document.getElementById("send"), ["click"], function(e) {
-  socket.emit('chat message', document.getElementById("m").value);
-  document.getElementById("m").value = "";
-});
-
-
-function draw(e) {
-  if (isInteracting) {
-    var x = e.clientX, y = e.clientY;
-    socket.emit('drawn', {x: x, y: y});
-  }
-}
-function msg(msg) {
-  document.getElementById("messages").innerHTML += msg + "<br>";
-}
-
-var socket = io();
-
-socket.on('welcome', msg);
-socket.on('chat message', msg);
-socket.on('drawn', function(msg){
-  var p = 10;
-  ctx.fillStyle = msg.colour;
-  ctx.fillRect(msg.x - p / 2, msg.y - p / 2, p, p);
-});
-
-</script>
+<!-- <script src="maze.js"></script> -->
+<script src="constants.js"></script>
+<script src="client.js"></script>
 
 </body>
 
