@@ -23,6 +23,7 @@ $("#c").bind("mousemove", function(e) {
   draw(e);
 });
 $("#c").bind("touchmove", function(e) {
+  e.preventDefault();
   draw(e.changedTouches[0]);
 });
 $("#c").bind("mousedown", function(e) {
@@ -32,9 +33,11 @@ $("#c").bind("mouseup", function(e) {
   isInteracting = false;
 });
 $("#c").bind("touchstart", function(e) {
+  e.preventDefault();
   isInteracting = true;
 });
 $("#c").bind("touchend", function(e) {
+  e.preventDefault();
   isInteracting = false;
 });
 function draw(e) {
