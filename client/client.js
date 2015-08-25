@@ -29,6 +29,7 @@ var ctx = canvas.getContext("2d");
 var labyrinth = null;
 var labyrinthCanvas = null;
 
+var startPosition = {};
 var playerPositions = [];
 var playerIndex = 0;
 var isInteracting = false;
@@ -58,6 +59,7 @@ function initListeners() {
   //   isInteracting = false;
   // });
 
+  listen(el("reset"), ["click"], function(e) { position.x = startPosition.x; position.y = startPosition.y; });
   listen(el("keyboard"), ["click"], function(e) { userInput = "keyboard"; });
   listen(el("tilt"), ["click"], function(e) { userInput = "tilt"; });
 
@@ -254,13 +256,14 @@ function setPlayer(playerData) {
     // case 1 : position = {x: sw - block * 1.5 , y: block * 1.5}; break;
     // case 2 : position = {x: sw - block * 1.5 , y: sh - block * 1.5}; break;
     // case 3 : position = {x: block * 1.5 , y: sh - block * 1.5}; break;
-    case 0 : position = {x: block * 1, y: block * 1}; break;
-    case 1 : position = {x: sw - block * 2 , y: block * 2}; break;
-    case 2 : position = {x: sw - block * 2 , y: sh - block * 2}; break;
-    case 3 : position = {x: block * 2 , y: sh - block * 2}; break;
+    case 0 : startPosition = {x: block * 2, y: block * 2}; break;
+    case 1 : startPosition = {x: sw - block * 2 , y: block * 2}; break;
+    case 2 : startPosition = {x: sw - block * 2 , y: sh - block * 2}; break;
+    case 3 : startPosition = {x: block * 2 , y: sh - block * 2}; break;
 
   }
-  lastPosition = {x: position.x, y: position.y};
+  position = {x: startPosition.x, y: startPosition.y};
+  lastPosition = {x: startPosition.x, y: startPosition.y};
 
   checkPosition(position);
 
