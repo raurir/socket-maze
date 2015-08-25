@@ -246,12 +246,13 @@ init = function(cb, w, h) {
     };
   }
   // make player corners
-  clear(0, 0, 2);
-  clear(xwide - 2, 0, 2);
-  clear(0, yhigh - 2, 2);
-  clear(xwide - 2, yhigh - 2, 2);
+  // clear(0, 0, 2);
+  // clear(xwide - 2, 0, 2);
+  // clear(0, yhigh - 2, 2);
+  // clear(xwide - 2, yhigh - 2, 2);
+
   // make central corner
-  clear(xwide / 2 - 3, yhigh / 2 - 3, 5);
+  // clear(xwide / 2 - 3, yhigh / 2 - 3, 5);
 
   // make edges
   for (var i = 0; i < xwide; i++) {

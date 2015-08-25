@@ -1,6 +1,6 @@
 var con = console;
 
-var block = 10;
+var block = 20;
 var cursor = block;/// 2;
 var cols = constants.cols;
 var rows = constants.rows;
@@ -76,7 +76,19 @@ function initListeners() {
   */
 };
 
+var mask = [];
 
+function pixelMask() {
+  for (var y = 0; y < rows * block; y++) {
+    mask[y] = [];
+    for (var x = 0; x < cols * block; x++) {
+      var xi = Math.floor(x / block);
+      var yi = Math.floor(y / block);
+      // mask.push( labyrinth[yi][xi] === "#" );
+      mask[y][x] = labyrinth[yi][xi] === "#";
+    }
+  }
+}
 
 
 function drawMaze() {
@@ -84,15 +96,35 @@ function drawMaze() {
   canvas.width = sw;
   canvas.height = sh;
   var ctx = canvas.getContext("2d");
-  for (var y = 0; y < rows; y++) {
-    for (var x = 0; x < cols; x++) {
-      if (labyrinth[y][x] === "#") {
-        var rgb = 240;
-        ctx.fillStyle = "rgba(" + rgb + "," + rgb + "," + rgb + ",1)";
-        ctx.fillRect(x * block, y * block, block, block);
-      }
+  // for (var y = 0; y < rows; y++) {
+  //   for (var x = 0; x < cols; x++) {
+  //     if (labyrinth[y][x] === "#") {
+  //       var rgb = 240;
+  //       ctx.fillStyle = "rgba(" + rgb + "," + rgb + "," + rgb + ",1)";
+  //       ctx.fillRect(x * block, y * block, block, block);
+  //     }
+  //   }
+  // }
+
+  // 1 d verison.
+  // for (var i = 0; i < mask.length; i++) {
+  //   var x = i % (cols * block);
+  //   var y = Math.floor(i / (cols * block));
+  //   var rgb = mask[i] ? 100 : 255;
+  //   ctx.fillStyle = "rgba(" + rgb + "," + rgb + "," + rgb + ",1)";
+  //   ctx.fillRect(x, y, 1, 1);
+  // }
+
+  for (var y = 0; y < rows * block; y++) {
+    for (var x = 0; x < cols * block; x++) {
+      // mask.push( labyrinth[yi][xi] === "#" );
+      var rgb = mask[y][x] ? 100 : 200;
+      ctx.fillStyle = "rgba(" + rgb + "," + rgb + "," + rgb + ",1)";
+      ctx.fillRect(x, y, 1, 1);
     }
   }
+
+
   return canvas;
 }
 
@@ -114,6 +146,54 @@ function render() {
     y: position.y
   }
 
+  if (keysDown.left) newPosition.x -= keyMovement;
+  if (keysDown.right ) newPosition.x += keyMovement;
+  if (keysDown.up) newPosition.y -= keyMovement;
+  if (keysDown.down) newPosition.y += keyMovement;
+
+
+  ctx.fillStyle = "red"
+  ctx.fillRect(position.x, position.y, block, block);
+
+  var directionsOk = {up: true, right: true, down: true, left: true};
+
+  function error(y, x) {
+    ctx.fillStyle = "yellow";
+    ctx.fillRect(x, y, 1, 1);
+  }
+
+  if (mask[ newPosition.y - 1 ] == undefined || mask[ newPosition.y - 1 ][ newPosition.x ]) {
+    directionsOk.up = false; // upper is full
+    error(newPosition.y - 1, newPosition.x);
+  }
+  if (mask[ newPosition.y + 1 ] == undefined || mask[ newPosition.y + 1 ][ newPosition.x ]) {
+    directionsOk.down = false; // lower is full
+    error(newPosition.y + 1, newPosition.x);
+  }
+  if (mask[ newPosition.y ] == undefined || mask[ newPosition.y ][ newPosition.x - 1]) {
+    directionsOk.left = false; // left is full
+    error(newPosition.y, newPosition.x - 1);
+  }
+  if (mask[ newPosition.y ] == undefined || mask[ newPosition.y ][ newPosition.x + 1]) {
+    directionsOk.right = false; // right is full
+    error(newPosition.y, newPosition.x + 1);
+  }
+
+  if (keysDown.left && directionsOk.left) position.x = newPosition.x;
+  if (keysDown.right && directionsOk.right) position.x = newPosition.x;
+  if (keysDown.up && directionsOk.up) position.y = newPosition.y;
+  if (keysDown.down && directionsOk.down) position.y = newPosition.y
+
+
+
+
+
+
+
+
+
+
+  /*
   var positionIndexMin = {
     x: Math.round((newPosition.x) / block),
     y: Math.round((newPosition.y) / block)
@@ -146,6 +226,8 @@ function render() {
 
   position.x = newPosition.x;
   position.y = newPosition.y;
+
+  */
 
   if (position.x != lastPosition.x || position.y != lastPosition.y) {
     sockets.move(position);
@@ -186,10 +268,15 @@ function setPlayer(playerData) {
   msg("Welcome player: " + playerData.playerIndex);
   var index = playerData.playerIndex % 4;
   switch(index) {
-    case 0 : position = {x: block * 1.5, y: block * 1.5}; break;
-    case 1 : position = {x: sw - block * 1.5 , y: block * 1.5}; break;
-    case 2 : position = {x: sw - block * 1.5 , y: sh - block * 1.5}; break;
-    case 3 : position = {x: block * 1.5 , y: sh - block * 1.5}; break;
+    // case 0 : position = {x: block * 1.5, y: block * 1.5}; break;
+    // case 1 : position = {x: sw - block * 1.5 , y: block * 1.5}; break;
+    // case 2 : position = {x: sw - block * 1.5 , y: sh - block * 1.5}; break;
+    // case 3 : position = {x: block * 1.5 , y: sh - block * 1.5}; break;
+    case 0 : position = {x: block * 1, y: block * 1}; break;
+    case 1 : position = {x: sw - block * 2 , y: block * 2}; break;
+    case 2 : position = {x: sw - block * 2 , y: sh - block * 2}; break;
+    case 3 : position = {x: block * 2 , y: sh - block * 2}; break;
+
   }
   lastPosition = {x: position.x, y: position.y};
 
@@ -203,6 +290,7 @@ sockets = sockets({
   onWelcome: function(welcomeMessage) {
     con.log("welcomeMessage", welcomeMessage);
     labyrinth = welcomeMessage.maze;
+    pixelMask();
     labyrinthCanvas = drawMaze();
     setPlayer(welcomeMessage);
     initListeners();
