@@ -1,7 +1,7 @@
 var con = console;
 
 var block = 10;
-var cursor = block / 2;
+var cursor = block;/// 2;
 var cols = constants.cols;
 var rows = constants.rows;
 var sw = block * cols, sh = block * rows;
@@ -104,77 +104,68 @@ function tilt(y, x) {
 
 function render() {
 
+  ctx.clearRect(0, 0, sw, sh);
+  ctx.drawImage(labyrinthCanvas, 0, 0);
+
   var keyMovement = 1;
-  if (keysDown.left) position.x -= keyMovement;
-  if (keysDown.right) position.x += keyMovement;
-  if (keysDown.up) position.y -= keyMovement;
-  if (keysDown.down) position.y += keyMovement;
-  if (position.x < 0) position.x = 0;
-  if (position.x > sw) position.x = sw;
-  if (position.y < 0) position.y = 0;
-  if (position.y > sh) position.y = sh;
+
+  var newPosition = {
+    x: position.x,
+    y: position.y
+  }
 
   var positionIndexMin = {
-    x: Math.floor((position.x - cursor / 2) / block),
-    y: Math.floor((position.y - cursor / 2) / block)
+    x: Math.round((newPosition.x) / block),
+    y: Math.round((newPosition.y) / block)
   }
-  var positionIndexMax = {
-    x: Math.floor((position.x + cursor / 2) / block),
-    y: Math.floor((position.y + cursor / 2) / block)
+
+  ctx.fillStyle = "red"
+  ctx.fillRect(positionIndexMin.x * block, positionIndexMin.y * block, block, block);
+
+
+  var directionsOk = {up: true, right: true, down: true, left: true};
+
+  if (labyrinth[ positionIndexMin.y - 1 ][ positionIndexMin.x ] === "#") {
+    directionsOk.up = false; // upper is full
+  }
+  if (labyrinth[ positionIndexMin.y + 1 ][ positionIndexMin.x ] === "#") {
+    directionsOk.down = false; // lower is full
+  }
+  if (labyrinth[ positionIndexMin.y ][ positionIndexMin.x - 1] === "#") {
+    directionsOk.left = false; // left is full
+  }
+  if (labyrinth[ positionIndexMin.y ][ positionIndexMin.x + 1] === "#") {
+    directionsOk.right = false; // right is full
   }
 
 
-  // con.log("positionIndexMin.y ][ positionIndexMin.x", positionIndexMin.y , positionIndexMin.x)
+  if (keysDown.left && directionsOk.left) newPosition.x -= keyMovement;
+  if (keysDown.right && directionsOk.right) newPosition.x += keyMovement;
+  if (keysDown.up && directionsOk.up) newPosition.y -= keyMovement;
+  if (keysDown.down && directionsOk.down) newPosition.y += keyMovement;
 
-  var positionOk = true;
-  var rgb = 20;
-  if (labyrinth[ positionIndexMin.y ][ positionIndexMin.x ] === "#") {
-    positionOk = false;
-  }
-  if (labyrinth[ positionIndexMax.y ][ positionIndexMax.x ] === "#") {
-    positionOk = false;
-  }
-
-  if (positionOk === false) {
-    rgb = 60;
-    position.x = lastPosition.x;
-    position.y = lastPosition.y;
-  }
+  position.x = newPosition.x;
+  position.y = newPosition.y;
 
   if (position.x != lastPosition.x || position.y != lastPosition.y) {
-    socket.emit('moved', position);
+    sockets.move(position);
   }
 
   lastPosition.x = position.x;
   lastPosition.y = position.y;
 
-
-  // for (var y = 0; y < rows; y++) {
-  //   for (var x = 0; x < cols; x++) {
-  //     if (labyrinth[y][x] === "#") {
-  //       ctx.fillStyle = "rgba(" + rgb + "," + rgb + "," + rgb + ",1)";
-  //       ctx.fillRect(x * block, y * block, block, block);
-  //     }
-  //   }
-  // }
-
   // output.innerHTML = ['tilt', Math.round(x * 100), Math.round(y * 100)];
-  ctx.clearRect(0, 0, sw, sh);
-  ctx.drawImage(labyrinthCanvas, 0, 0);
 
   for (var i = 0; i < playerPositions.length; i++) {
     var player = playerPositions[i];
     if (player) {
       // con.log("playerPositions[i];", playerPositions[i] )
 
+      ctx.fillStyle = "rgba(0,0,0,0.5)";
+      ctx.fillRect(player.position.x, player.position.y, cursor, cursor);
       ctx.fillStyle = player.colour;
-      ctx.fillRect(player.position.x - cursor / 2, player.position.y - cursor / 2, cursor, cursor);
+      ctx.fillRect(player.position.x, player.position.y, 1, 1);
     }
-
-
-  // var p = 10;
-  // ctx.fillStyle = msg.colour;
-  // ctx.fillRect(msg.x - p / 2, msg.y - p / 2, p, p);
   };
 
   requestAnimationFrame(render);
@@ -195,10 +186,10 @@ function setPlayer(playerData) {
   msg("Welcome player: " + playerData.playerIndex);
   var index = playerData.playerIndex % 4;
   switch(index) {
-    case 0 : position = {x: block / 2 , y: block / 2}; break;
-    case 1 : position = {x: sw - block / 2 , y: block / 2}; break;
-    case 2 : position = {x: sw - block / 2 , y: sh - block / 2}; break;
-    case 3 : position = {x: block / 2 , y: sh - block / 2}; break;
+    case 0 : position = {x: block * 1.5, y: block * 1.5}; break;
+    case 1 : position = {x: sw - block * 1.5 , y: block * 1.5}; break;
+    case 2 : position = {x: sw - block * 1.5 , y: sh - block * 1.5}; break;
+    case 3 : position = {x: block * 1.5 , y: sh - block * 1.5}; break;
   }
   lastPosition = {x: position.x, y: position.y};
 
@@ -208,26 +199,20 @@ function setPlayer(playerData) {
 }
 
 
-var socket = io();
-
-socket.on('welcome', function(welcomeMessage) {
-  con.log("welcomeMessage", welcomeMessage);
-  labyrinth = welcomeMessage.maze;
-  labyrinthCanvas = drawMaze();
-  setPlayer(welcomeMessage);
-  initListeners();
-  render();
+sockets = sockets({
+  onWelcome: function(welcomeMessage) {
+    con.log("welcomeMessage", welcomeMessage);
+    labyrinth = welcomeMessage.maze;
+    labyrinthCanvas = drawMaze();
+    setPlayer(welcomeMessage);
+    initListeners();
+    render();
+  },
+  onMessage: msg,
+  onMove: function(playerMove){
+    // con.log("moved", msg);
+    playerPositions[playerMove.playerIndex] = playerMove;
+  }
 });
 
-socket.on('chat message', msg);
 
-// socket.on('drawn', function(msg){
-//   var p = 10;
-//   ctx.fillStyle = msg.colour;
-//   ctx.fillRect(msg.x - p / 2, msg.y - p / 2, p, p);
-// });
-
-socket.on('moved', function(msg){
-  // con.log("moved", msg);
-  playerPositions[msg.playerIndex] = msg
-});

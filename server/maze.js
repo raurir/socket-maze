@@ -245,12 +245,20 @@ init = function(cb, w, h) {
       };
     };
   }
+  // make player corners
   clear(0, 0, 2);
   clear(xwide - 2, 0, 2);
   clear(0, yhigh - 2, 2);
   clear(xwide - 2, yhigh - 2, 2);
-
+  // make central corner
   clear(xwide / 2 - 3, yhigh / 2 - 3, 5);
+
+  // make edges
+  for (var i = 0; i < xwide; i++) {
+    for (var j = 0; j < yhigh; j++) {
+      if (i == 0 || j == 0 || i == xwide - 1 || j == yhigh - 1) harden(i, j);
+    };
+  };
 
   carve(xchoice, ychoice);
 

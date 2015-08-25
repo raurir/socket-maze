@@ -1,9 +1,11 @@
-var app = require('express')();
+var express = require('express');
+var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var path = require('path');
 
 var maze = require('./maze');
-var constants = require('./constants');
+var constants = require('../constants');
 
 var port = 8010;
 var connections = {};
@@ -12,6 +14,8 @@ var con = console;
 var game = maze();
 
 var players = 0;
+
+
 
 game.init(function(labyrinth) {
   con.log("complete labyrinth", labyrinth.length);
@@ -88,13 +92,18 @@ game.init(function(labyrinth) {
 
 }, constants.cols, constants.rows);
 
-con.log("constants", constants);
+// con.log("constants", constants);
+
+app.use(express.static(__dirname + '/../client'));
 
 app.get('/', function(req, res){
-  res.sendFile(__dirname + '/index.html');
+  res.sendFile(req.path, {root: "../client/"});
+});
+app.get('/constants.js', function(req, res){
+  res.sendFile(req.path, {root: __dirname + "/../"});
 });
 app.get('*.js', function(req, res){
-  res.sendFile(__dirname + req.path);
+  res.sendFile(req.path, {root: "../client/"});
 });
 
 http.listen(port, function(){
