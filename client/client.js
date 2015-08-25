@@ -46,12 +46,12 @@ function initListeners() {
     isInteracting = false;
   });
   listen(document.getElementById("send"), ["click"], function(e) {
-    socket.emit('chat message', document.getElementById("m").value);
+    sockets.chat(document.getElementById("m").value);
     document.getElementById("m").value = "";
   });
 
   listen(window, ["keydown", "keyup"], function(e) {
-    var pressed = e.type === "keydown";
+    var pressed = e.type === "keydown" ? 1 : 0;
     switch (e.which) {
       case 37 : case 100 : keysDown.left = pressed; break;
       case 38 : case 104 : keysDown.up = pressed; break;
@@ -60,7 +60,7 @@ function initListeners() {
     }
     // con.log(e.which, pressed);
   });
-  /*
+
   if (window.DeviceOrientationEvent) {
     listen(window, ["deviceorientation"], function () {
       tilt(event.beta, event.gamma);
@@ -74,7 +74,7 @@ function initListeners() {
       tilt(orientation.x * 50, orientation.y * 50);
     }, true);
   }
-  */
+  
 };
 
 var mask = [];
@@ -126,14 +126,15 @@ function drawMaze() {
     }
   }
 
-
   return canvas;
 }
 
 
 function tilt(y, x) {
-  position.x += x;
-  position.y += y;
+  keysDown.left = (x < 0 ? -x : 0) * 0.1;
+  keysDown.right =( x > 0 ? x : 0) * 0.1;
+  keysDown.up = (y < 0 ? -y : 0) * 0.1;
+  keysDown.down =( y > 0 ? y : 0) * 0.1;
 };
 
 
@@ -171,21 +172,22 @@ function render() {
   ctx.clearRect(0, 0, sw, sh);
   ctx.drawImage(labyrinthCanvas, 0, 0);
 
-  var directionsOk = checkPosition(position);
+
+  var directionsOk = checkPosition({x: Math.round(position.x), y: Math.round(position.y)});
 
   var newPosition = {
     x: position.x,
     y: position.y
   }
 
-  var keyMovement = 1;
+  // var keyMovement = 1;
 
-  if (keysDown.left && directionsOk.left) newPosition.x -= keyMovement;
-  if (keysDown.right && directionsOk.right) newPosition.x += keyMovement;
-  if (keysDown.up && directionsOk.up) newPosition.y -= keyMovement;
-  if (keysDown.down && directionsOk.down) newPosition.y += keyMovement;
+  if (keysDown.left && directionsOk.left) newPosition.x -= keysDown.left;
+  if (keysDown.right && directionsOk.right) newPosition.x += keysDown.right;
+  if (keysDown.up && directionsOk.up) newPosition.y -= keysDown.up;
+  if (keysDown.down && directionsOk.down) newPosition.y += keysDown.down;
 
-  output.innerHTML = [keysDown.left, directionsOk.left];
+  // output.innerHTML = [keysDown.left, directionsOk.left];
 
   position.x = newPosition.x;
   position.y = newPosition.y;
