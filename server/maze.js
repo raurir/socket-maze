@@ -228,15 +228,9 @@ init = function(cb, w, h) {
     field.push(row);
   }
 
-
   var xchoice = random.randint(0, xwide - 1);
   var ychoice = random.randint(0, yhigh - 1);
-  con.log("init", xwide, yhigh, xchoice, ychoice);
-
-  // carve(0, 1);
-  // carve(1, 0);
-  // carve(1, 1);
-  // harden(0,0);
+  // con.log("init", xwide, yhigh, xchoice, ychoice);
 
   function clear(x, y, size) {
     for (var i = 0; i < size; i++) {
@@ -246,13 +240,14 @@ init = function(cb, w, h) {
     };
   }
   // make player corners
-  // clear(0, 0, 2);
-  // clear(xwide - 2, 0, 2);
-  // clear(0, yhigh - 2, 2);
-  // clear(xwide - 2, yhigh - 2, 2);
+  var playerSize = 4;
+  clear(0, 0, playerSize);
+  clear(xwide - playerSize, 0, playerSize);
+  clear(0, yhigh - playerSize, playerSize);
+  clear(xwide - playerSize, yhigh - playerSize, playerSize);
 
-  // make central corner
-  // clear(xwide / 2 - 3, yhigh / 2 - 3, 5);
+  // make central piece
+  clear(xwide / 2 - 3, yhigh / 2 - 3, 5);
 
   // make edges
   for (var i = 0; i < xwide; i++) {

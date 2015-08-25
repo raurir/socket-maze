@@ -1,13 +1,14 @@
 var con = console;
 
 var block = 20;
-var cursor = block;/// 2;
+var cursor = block / 2;
 var cols = constants.cols;
 var rows = constants.rows;
 var sw = block * cols, sh = block * rows;
 var canvas = document.getElementById("c")
 canvas.width = sw;
 canvas.height = sh;
+// canvas.style.width = canvas.style.height = sw * 10 + "px";
 var ctx = canvas.getContext("2d");
 var labyrinth = null;
 var labyrinthCanvas = null;
@@ -79,6 +80,7 @@ function initListeners() {
 var mask = [];
 
 function pixelMask() {
+  con.log(labyrinth);
   for (var y = 0; y < rows * block; y++) {
     mask[y] = [];
     for (var x = 0; x < cols * block; x++) {
@@ -118,7 +120,7 @@ function drawMaze() {
   for (var y = 0; y < rows * block; y++) {
     for (var x = 0; x < cols * block; x++) {
       // mask.push( labyrinth[yi][xi] === "#" );
-      var rgb = mask[y][x] ? 100 : 200;
+      var rgb = Math.round(Math.random() * 30 + (mask[y][x] ? 30 : 100));
       ctx.fillStyle = "rgba(" + rgb + "," + rgb + "," + rgb + ",1)";
       ctx.fillRect(x, y, 1, 1);
     }
@@ -134,100 +136,59 @@ function tilt(y, x) {
   position.y += y;
 };
 
+
+function checkPosition(pos) {
+
+  function error(y, x) { ctx.fillStyle = "red"; ctx.fillRect(x, y, 1, 1); }
+  function good(y, x) { ctx.fillStyle = "yellow"; ctx.fillRect(x, y, 1, 1); }
+
+  function checkRow(x, y) {
+    var ok = true;
+    for (var i = 0; i < cursor; i++) {
+      if (mask[y][x + i]) { ok = false; error(y, x + i); } else { good(y, x + i); }
+    };
+    return ok;
+  }
+
+  function checkCol(x, y) {
+    var ok = true;
+    for (var i = 0; i < cursor; i++) {
+      if (mask[y + i][x]) { ok = false; error(y + i, x); } else { good(y + i, x); }
+    };
+    return ok;
+  }
+
+  return {
+    up: checkRow(pos.x, pos.y - 1),
+    down: checkRow(pos.x, pos.y + cursor),
+    left: checkCol(pos.x - 1, pos.y),
+    right: checkCol(pos.x + cursor, pos.y),
+  }
+}
+
 function render() {
 
   ctx.clearRect(0, 0, sw, sh);
   ctx.drawImage(labyrinthCanvas, 0, 0);
 
-  var keyMovement = 1;
+  var directionsOk = checkPosition(position);
 
   var newPosition = {
     x: position.x,
     y: position.y
   }
 
-  if (keysDown.left) newPosition.x -= keyMovement;
-  if (keysDown.right ) newPosition.x += keyMovement;
-  if (keysDown.up) newPosition.y -= keyMovement;
-  if (keysDown.down) newPosition.y += keyMovement;
-
-
-  ctx.fillStyle = "red"
-  ctx.fillRect(position.x, position.y, block, block);
-
-  var directionsOk = {up: true, right: true, down: true, left: true};
-
-  function error(y, x) {
-    ctx.fillStyle = "yellow";
-    ctx.fillRect(x, y, 1, 1);
-  }
-
-  if (mask[ newPosition.y - 1 ] == undefined || mask[ newPosition.y - 1 ][ newPosition.x ]) {
-    directionsOk.up = false; // upper is full
-    error(newPosition.y - 1, newPosition.x);
-  }
-  if (mask[ newPosition.y + 1 ] == undefined || mask[ newPosition.y + 1 ][ newPosition.x ]) {
-    directionsOk.down = false; // lower is full
-    error(newPosition.y + 1, newPosition.x);
-  }
-  if (mask[ newPosition.y ] == undefined || mask[ newPosition.y ][ newPosition.x - 1]) {
-    directionsOk.left = false; // left is full
-    error(newPosition.y, newPosition.x - 1);
-  }
-  if (mask[ newPosition.y ] == undefined || mask[ newPosition.y ][ newPosition.x + 1]) {
-    directionsOk.right = false; // right is full
-    error(newPosition.y, newPosition.x + 1);
-  }
-
-  if (keysDown.left && directionsOk.left) position.x = newPosition.x;
-  if (keysDown.right && directionsOk.right) position.x = newPosition.x;
-  if (keysDown.up && directionsOk.up) position.y = newPosition.y;
-  if (keysDown.down && directionsOk.down) position.y = newPosition.y
-
-
-
-
-
-
-
-
-
-
-  /*
-  var positionIndexMin = {
-    x: Math.round((newPosition.x) / block),
-    y: Math.round((newPosition.y) / block)
-  }
-
-  ctx.fillStyle = "red"
-  ctx.fillRect(positionIndexMin.x * block, positionIndexMin.y * block, block, block);
-
-
-  var directionsOk = {up: true, right: true, down: true, left: true};
-
-  if (labyrinth[ positionIndexMin.y - 1 ][ positionIndexMin.x ] === "#") {
-    directionsOk.up = false; // upper is full
-  }
-  if (labyrinth[ positionIndexMin.y + 1 ][ positionIndexMin.x ] === "#") {
-    directionsOk.down = false; // lower is full
-  }
-  if (labyrinth[ positionIndexMin.y ][ positionIndexMin.x - 1] === "#") {
-    directionsOk.left = false; // left is full
-  }
-  if (labyrinth[ positionIndexMin.y ][ positionIndexMin.x + 1] === "#") {
-    directionsOk.right = false; // right is full
-  }
-
+  var keyMovement = 1;
 
   if (keysDown.left && directionsOk.left) newPosition.x -= keyMovement;
   if (keysDown.right && directionsOk.right) newPosition.x += keyMovement;
   if (keysDown.up && directionsOk.up) newPosition.y -= keyMovement;
   if (keysDown.down && directionsOk.down) newPosition.y += keyMovement;
 
+  output.innerHTML = [keysDown.left, directionsOk.left];
+
   position.x = newPosition.x;
   position.y = newPosition.y;
-
-  */
 
   if (position.x != lastPosition.x || position.y != lastPosition.y) {
     sockets.move(position);
@@ -242,11 +203,10 @@ function render() {
     var player = playerPositions[i];
     if (player) {
       // con.log("playerPositions[i];", playerPositions[i] )
-
-      ctx.fillStyle = "rgba(0,0,0,0.5)";
-      ctx.fillRect(player.position.x, player.position.y, cursor, cursor);
+      // ctx.fillStyle = "rgba(0,0,0,0.5)";
+      // ctx.fillRect(player.position.x, player.position.y, cursor, cursor);
       ctx.fillStyle = player.colour;
-      ctx.fillRect(player.position.x, player.position.y, 1, 1);
+      ctx.fillRect(player.position.x, player.position.y, cursor, cursor);
     }
   };
 
@@ -279,6 +239,8 @@ function setPlayer(playerData) {
 
   }
   lastPosition = {x: position.x, y: position.y};
+
+  checkPosition(position);
 
   // playerPositions[playerData.playerIndex] = playerData;
 

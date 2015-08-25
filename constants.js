@@ -1,6 +1,6 @@
 var constants = {
-  cols: 6,
-  rows: 6
+  cols: 24,
+  rows: 24
 }
 
 if (typeof module != "undefined") {
