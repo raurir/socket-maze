@@ -1,11 +1,27 @@
 var con = console;
 
+function el(id) {
+  return document.getElementById(id);
+}
+
+function log(msg) {
+  el("output").innerHTML = msg;
+}
+
+function listen(target, eventNames, callback) {
+  for (var i = 0; i < eventNames.length; i++) {
+    target.addEventListener(eventNames[i], callback);
+  }
+}
+
+var userInput = "tilt";
+
 var block = 20;
 var cursor = block / 2;
 var cols = constants.cols;
 var rows = constants.rows;
 var sw = block * cols, sh = block * rows;
-var canvas = document.getElementById("c")
+var canvas = el("c")
 canvas.width = sw;
 canvas.height = sh;
 // canvas.style.width = canvas.style.height = sw * 10 + "px";
@@ -20,37 +36,41 @@ var keysDown = { up: false, down: false, left: false, right: false};
 var position = {x: 0, y: 0};
 var lastPosition;
 
+var tiltTolerance = 5;
+var tiltSpeed = 0.2;
 
-function log(msg) {
-  document.getElementById("output").innerHTML = msg;
-}
 
-function listen(target, eventNames, callback) {
-  for (var i = 0; i < eventNames.length; i++) {
-    target.addEventListener(eventNames[i], callback);
-  }
-}
+el("tiltTolerance").value = tiltTolerance;
+el("tiltSpeed").value = tiltSpeed;
 
 function initListeners() {
-  listen(canvas, ["mousedown", "touchstart"], function(e) {
-    e.preventDefault();
-    isInteracting = true;
-  });
-  listen(canvas, ["mousemove", "touchmove"], function(e) {
-    e.preventDefault();
-    if (e.changedTouches && e.changedTouches[0]) e = e.changedTouches[0];
-    draw(e);
-  });
-  listen(canvas, ["mouseup", "touchend"], function(e) {
-    e.preventDefault();
-    isInteracting = false;
-  });
-  listen(document.getElementById("send"), ["click"], function(e) {
-    sockets.chat(document.getElementById("m").value);
-    document.getElementById("m").value = "";
+  // listen(canvas, ["mousedown", "touchstart"], function(e) {
+  //   e.preventDefault();
+  //   isInteracting = true;
+  // });
+  // listen(canvas, ["mousemove", "touchmove"], function(e) {
+  //   e.preventDefault();
+  //   if (e.changedTouches && e.changedTouches[0]) e = e.changedTouches[0];
+  //   draw(e);
+  // });
+  // listen(canvas, ["mouseup", "touchend"], function(e) {
+  //   e.preventDefault();
+  //   isInteracting = false;
+  // });
+
+  listen(el("keyboard"), ["click"], function(e) { userInput = "keyboard"; });
+  listen(el("tilt"), ["click"], function(e) { userInput = "tilt"; });
+
+  listen(el("tiltTolerance"), ["change"], function(e) { tiltTolerance = Number(e.currentTarget.value); });
+  listen(el("tiltSpeed"), ["change"], function(e) { tiltSpeed = Number(e.currentTarget.value); });
+
+  listen(el("send"), ["click"], function(e) {
+    sockets.chat(el("m").value);
+    el("m").value = "";
   });
 
   listen(window, ["keydown", "keyup"], function(e) {
+    if (userInput == "tilt") return;
     var pressed = e.type === "keydown" ? 1 : 0;
     switch (e.which) {
       case 37 : case 100 : keysDown.left = pressed; break;
@@ -129,12 +149,12 @@ function drawMaze() {
   return canvas;
 }
 
-
 function tilt(y, x) {
-  keysDown.left = (x < 0 ? -x : 0) * 0.1;
-  keysDown.right =( x > 0 ? x : 0) * 0.1;
-  keysDown.up = (y < 0 ? -y : 0) * 0.1;
-  keysDown.down =( y > 0 ? y : 0) * 0.1;
+  if (userInput == "keyboard") return;
+  keysDown.left = (x < tiltTolerance ? -x : 0) * tiltSpeed;
+  keysDown.right =( x > tiltTolerance ? x : 0) * tiltSpeed;
+  keysDown.up = (y < tiltTolerance ? -y : 0) * tiltSpeed;
+  keysDown.down =( y > tiltTolerance ? y : 0) * tiltSpeed;
 };
 
 
@@ -189,8 +209,8 @@ function render() {
 
   // output.innerHTML = [keysDown.left, directionsOk.left];
 
-  position.x = newPosition.x;
-  position.y = newPosition.y;
+  position.x = Math.round(newPosition.x);
+  position.y = Math.round(newPosition.y);
 
   if (position.x != lastPosition.x || position.y != lastPosition.y) {
     sockets.move(position);
@@ -223,7 +243,7 @@ function draw(e) {
   }
 }
 function msg(msg) {
-  document.getElementById("messages").innerHTML += msg + "<br>";
+  el("messages").innerHTML += msg + "<br>";
 }
 
 function setPlayer(playerData) {

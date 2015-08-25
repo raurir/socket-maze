@@ -7,11 +7,18 @@ canvas {
 	image-rendering: pixelated;
 }
 </style>
-<canvas id='c'></canvas>
-<div id='messages'></div>
+
+<canvas id="c"></canvas>
+<div id="messages"></div>
 <input type="text" id="m"></input>
 <button id="send">Send</button>
 <div id="output"></button>
+
+Tilt tolerance: <input type="number" id="tiltTolerance"></input><br>
+Tile speed: <input type="number" id="tiltSpeed"></input><br>
+<button id="keyboard">Keyboard</button>
+<button id="tilt">Tilt</button>
+
 
 <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
 <!-- <script src="maze.js"></script> -->
