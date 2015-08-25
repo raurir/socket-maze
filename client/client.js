@@ -1,11 +1,27 @@
 var con = console;
 
+function el(id) {
+  return document.getElementById(id);
+}
+
+function log(msg) {
+  el("output").innerHTML = msg;
+}
+
+function listen(target, eventNames, callback) {
+  for (var i = 0; i < eventNames.length; i++) {
+    target.addEventListener(eventNames[i], callback);
+  }
+}
+
+var userInput = "tilt";
+
 var block = 20;
 var cursor = block / 2;
 var cols = constants.cols;
 var rows = constants.rows;
 var sw = block * cols, sh = block * rows;
-var canvas = document.getElementById("c")
+var canvas = el("c")
 canvas.width = sw;
 canvas.height = sh;
 // canvas.style.width = canvas.style.height = sw * 10 + "px";
@@ -20,38 +36,42 @@ var keysDown = { up: false, down: false, left: false, right: false};
 var position = {x: 0, y: 0};
 var lastPosition;
 
+var tiltTolerance = 5;
+var tiltSpeed = 0.2;
 
-function log(msg) {
-  document.getElementById("output").innerHTML = msg;
-}
 
-function listen(target, eventNames, callback) {
-  for (var i = 0; i < eventNames.length; i++) {
-    target.addEventListener(eventNames[i], callback);
-  }
-}
+el("tiltTolerance").value = tiltTolerance;
+el("tiltSpeed").value = tiltSpeed;
 
 function initListeners() {
-  listen(canvas, ["mousedown", "touchstart"], function(e) {
-    e.preventDefault();
-    isInteracting = true;
-  });
-  listen(canvas, ["mousemove", "touchmove"], function(e) {
-    e.preventDefault();
-    if (e.changedTouches && e.changedTouches[0]) e = e.changedTouches[0];
-    draw(e);
-  });
-  listen(canvas, ["mouseup", "touchend"], function(e) {
-    e.preventDefault();
-    isInteracting = false;
-  });
-  listen(document.getElementById("send"), ["click"], function(e) {
-    socket.emit('chat message', document.getElementById("m").value);
-    document.getElementById("m").value = "";
+  // listen(canvas, ["mousedown", "touchstart"], function(e) {
+  //   e.preventDefault();
+  //   isInteracting = true;
+  // });
+  // listen(canvas, ["mousemove", "touchmove"], function(e) {
+  //   e.preventDefault();
+  //   if (e.changedTouches && e.changedTouches[0]) e = e.changedTouches[0];
+  //   draw(e);
+  // });
+  // listen(canvas, ["mouseup", "touchend"], function(e) {
+  //   e.preventDefault();
+  //   isInteracting = false;
+  // });
+
+  listen(el("keyboard"), ["click"], function(e) { userInput = "keyboard"; });
+  listen(el("tilt"), ["click"], function(e) { userInput = "tilt"; });
+
+  listen(el("tiltTolerance"), ["change"], function(e) { tiltTolerance = Number(e.currentTarget.value); });
+  listen(el("tiltSpeed"), ["change"], function(e) { tiltSpeed = Number(e.currentTarget.value); });
+
+  listen(el("send"), ["click"], function(e) {
+    sockets.chat(el("m").value);
+    el("m").value = "";
   });
 
   listen(window, ["keydown", "keyup"], function(e) {
-    var pressed = e.type === "keydown";
+    if (userInput == "tilt") return;
+    var pressed = e.type === "keydown" ? 1 : 0;
     switch (e.which) {
       case 37 : case 100 : keysDown.left = pressed; break;
       case 38 : case 104 : keysDown.up = pressed; break;
@@ -60,7 +80,7 @@ function initListeners() {
     }
     // con.log(e.which, pressed);
   });
-  /*
+
   if (window.DeviceOrientationEvent) {
     listen(window, ["deviceorientation"], function () {
       tilt(event.beta, event.gamma);
@@ -74,7 +94,7 @@ function initListeners() {
       tilt(orientation.x * 50, orientation.y * 50);
     }, true);
   }
-  */
+  
 };
 
 var mask = [];
@@ -126,14 +146,15 @@ function drawMaze() {
     }
   }
 
-
   return canvas;
 }
 
-
 function tilt(y, x) {
-  position.x += x;
-  position.y += y;
+  if (userInput == "keyboard") return;
+  keysDown.left = (x < tiltTolerance ? -x : 0) * tiltSpeed;
+  keysDown.right =( x > tiltTolerance ? x : 0) * tiltSpeed;
+  keysDown.up = (y < tiltTolerance ? -y : 0) * tiltSpeed;
+  keysDown.down =( y > tiltTolerance ? y : 0) * tiltSpeed;
 };
 
 
@@ -171,24 +192,25 @@ function render() {
   ctx.clearRect(0, 0, sw, sh);
   ctx.drawImage(labyrinthCanvas, 0, 0);
 
-  var directionsOk = checkPosition(position);
+
+  var directionsOk = checkPosition({x: Math.round(position.x), y: Math.round(position.y)});
 
   var newPosition = {
     x: position.x,
     y: position.y
   }
 
-  var keyMovement = 1;
+  // var keyMovement = 1;
 
-  if (keysDown.left && directionsOk.left) newPosition.x -= keyMovement;
-  if (keysDown.right && directionsOk.right) newPosition.x += keyMovement;
-  if (keysDown.up && directionsOk.up) newPosition.y -= keyMovement;
-  if (keysDown.down && directionsOk.down) newPosition.y += keyMovement;
+  if (keysDown.left && directionsOk.left) newPosition.x -= keysDown.left;
+  if (keysDown.right && directionsOk.right) newPosition.x += keysDown.right;
+  if (keysDown.up && directionsOk.up) newPosition.y -= keysDown.up;
+  if (keysDown.down && directionsOk.down) newPosition.y += keysDown.down;
 
-  output.innerHTML = [keysDown.left, directionsOk.left];
+  // output.innerHTML = [keysDown.left, directionsOk.left];
 
-  position.x = newPosition.x;
-  position.y = newPosition.y;
+  position.x = Math.round(newPosition.x);
+  position.y = Math.round(newPosition.y);
 
   if (position.x != lastPosition.x || position.y != lastPosition.y) {
     sockets.move(position);
@@ -221,7 +243,7 @@ function draw(e) {
   }
 }
 function msg(msg) {
-  document.getElementById("messages").innerHTML += msg + "<br>";
+  el("messages").innerHTML += msg + "<br>";
 }
 
 function setPlayer(playerData) {
