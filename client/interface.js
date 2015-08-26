@@ -36,6 +36,8 @@ function keyboard(e) {
 
 function init() {
 
+  listen(el("newgame"), ["click"], function(e) { newFa });
+
   listen(el("reset"), ["click"], function(e) { position.x = startPosition.x; position.y = startPosition.y; });
   listen(el("keyboard"), ["click"], function(e) { userInput = "keyboard"; });
   listen(el("tilt"), ["click"], function(e) { userInput = "tilt"; });
