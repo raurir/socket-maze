@@ -26,8 +26,6 @@ canvas.width = sw;
 canvas.height = sh;
 // canvas.style.width = canvas.style.height = sw * 10 + "px";
 var ctx = canvas.getContext("2d");
-var labyrinth = null;
-var labyrinthCanvas = null;
 
 var startPosition = {};
 var playerPositions = [];
@@ -40,116 +38,8 @@ var lastPosition;
 var tiltTolerance = 5;
 var tiltSpeed = 0.2;
 
-
-el("tiltTolerance").value = tiltTolerance;
-el("tiltSpeed").value = tiltSpeed;
-
-function initListeners() {
-  // listen(canvas, ["mousedown", "touchstart"], function(e) {
-  //   e.preventDefault();
-  //   isInteracting = true;
-  // });
-  // listen(canvas, ["mousemove", "touchmove"], function(e) {
-  //   e.preventDefault();
-  //   if (e.changedTouches && e.changedTouches[0]) e = e.changedTouches[0];
-  //   draw(e);
-  // });
-  // listen(canvas, ["mouseup", "touchend"], function(e) {
-  //   e.preventDefault();
-  //   isInteracting = false;
-  // });
-
-  listen(el("reset"), ["click"], function(e) { position.x = startPosition.x; position.y = startPosition.y; });
-  listen(el("keyboard"), ["click"], function(e) { userInput = "keyboard"; });
-  listen(el("tilt"), ["click"], function(e) { userInput = "tilt"; });
-
-  listen(el("tiltTolerance"), ["change"], function(e) { tiltTolerance = Number(e.currentTarget.value); });
-  listen(el("tiltSpeed"), ["change"], function(e) { tiltSpeed = Number(e.currentTarget.value); });
-
-  listen(el("send"), ["click"], function(e) {
-    sockets.chat(el("m").value);
-    el("m").value = "";
-  });
-
-  listen(window, ["keydown", "keyup"], function(e) {
-    if (userInput == "tilt") return;
-    var pressed = e.type === "keydown" ? 1 : 0;
-    switch (e.which) {
-      case 37 : case 100 : keysDown.left = pressed; break;
-      case 38 : case 104 : keysDown.up = pressed; break;
-      case 39 : case 102 : keysDown.right = pressed; break;
-      case 40 : case 98 : keysDown.down = pressed; break;
-    }
-    // con.log(e.which, pressed);
-  });
-
-  if (window.DeviceOrientationEvent) {
-    listen(window, ["deviceorientation"], function () {
-      tilt(event.beta, event.gamma);
-    }, true);
-  } else if (window.DeviceMotionEvent) {
-    listen(window, ['devicemotion'], function () {
-      tilt(event.acceleration.x * 2, event.acceleration.y * 2);
-    }, true);
-  } else {
-    listen(window, ["MozOrientation"], function () {
-      tilt(orientation.x * 50, orientation.y * 50);
-    }, true);
-  }
-  
-};
-
 var mask = [];
 
-function pixelMask() {
-  con.log(labyrinth);
-  for (var y = 0; y < rows * block; y++) {
-    mask[y] = [];
-    for (var x = 0; x < cols * block; x++) {
-      var xi = Math.floor(x / block);
-      var yi = Math.floor(y / block);
-      // mask.push( labyrinth[yi][xi] === "#" );
-      mask[y][x] = labyrinth[yi][xi] === "#";
-    }
-  }
-}
-
-
-function drawMaze() {
-  var canvas = document.createElement("canvas");
-  canvas.width = sw;
-  canvas.height = sh;
-  var ctx = canvas.getContext("2d");
-  // for (var y = 0; y < rows; y++) {
-  //   for (var x = 0; x < cols; x++) {
-  //     if (labyrinth[y][x] === "#") {
-  //       var rgb = 240;
-  //       ctx.fillStyle = "rgba(" + rgb + "," + rgb + "," + rgb + ",1)";
-  //       ctx.fillRect(x * block, y * block, block, block);
-  //     }
-  //   }
-  // }
-
-  // 1 d verison.
-  // for (var i = 0; i < mask.length; i++) {
-  //   var x = i % (cols * block);
-  //   var y = Math.floor(i / (cols * block));
-  //   var rgb = mask[i] ? 100 : 255;
-  //   ctx.fillStyle = "rgba(" + rgb + "," + rgb + "," + rgb + ",1)";
-  //   ctx.fillRect(x, y, 1, 1);
-  // }
-
-  for (var y = 0; y < rows * block; y++) {
-    for (var x = 0; x < cols * block; x++) {
-      // mask.push( labyrinth[yi][xi] === "#" );
-      var rgb = Math.round(Math.random() * 30 + (mask[y][x] ? 30 : 100));
-      ctx.fillStyle = "rgba(" + rgb + "," + rgb + "," + rgb + ",1)";
-      ctx.fillRect(x, y, 1, 1);
-    }
-  }
-
-  return canvas;
-}
 
 function tilt(y, x) {
   if (userInput == "keyboard") return;
@@ -162,8 +52,8 @@ function tilt(y, x) {
 
 function checkPosition(pos) {
 
-  function error(y, x) { ctx.fillStyle = "red"; ctx.fillRect(x, y, 1, 1); }
-  function good(y, x) { ctx.fillStyle = "yellow"; ctx.fillRect(x, y, 1, 1); }
+  function error(y, x) { view.error("red", x, y, 1, 1); }
+  function good(y, x) { view.error("yellow", x, y, 1, 1); }
 
   function checkRow(x, y) {
     var ok = true;
@@ -191,9 +81,7 @@ function checkPosition(pos) {
 
 function render() {
 
-  ctx.clearRect(0, 0, sw, sh);
-  ctx.drawImage(labyrinthCanvas, 0, 0);
-
+  view.render();
 
   var directionsOk = checkPosition({x: Math.round(position.x), y: Math.round(position.y)});
 
@@ -221,18 +109,7 @@ function render() {
   lastPosition.x = position.x;
   lastPosition.y = position.y;
 
-  // output.innerHTML = ['tilt', Math.round(x * 100), Math.round(y * 100)];
 
-  for (var i = 0; i < playerPositions.length; i++) {
-    var player = playerPositions[i];
-    if (player) {
-      // con.log("playerPositions[i];", playerPositions[i] )
-      // ctx.fillStyle = "rgba(0,0,0,0.5)";
-      // ctx.fillRect(player.position.x, player.position.y, cursor, cursor);
-      ctx.fillStyle = player.colour;
-      ctx.fillRect(player.position.x, player.position.y, cursor, cursor);
-    }
-  };
 
   requestAnimationFrame(render);
 }
@@ -273,14 +150,16 @@ function setPlayer(playerData) {
 }
 
 
+interface = interface();
+view = view(sw, sh, block, cursor);
+
 sockets = sockets({
   onWelcome: function(welcomeMessage) {
     con.log("welcomeMessage", welcomeMessage);
-    labyrinth = welcomeMessage.maze;
-    pixelMask();
-    labyrinthCanvas = drawMaze();
+
+    mask = view.init(welcomeMessage.maze);
     setPlayer(welcomeMessage);
-    initListeners();
+    interface.init();
     render();
   },
   onMessage: msg,
