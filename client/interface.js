@@ -1,6 +1,6 @@
 var interface = function() {
 
-var userInput = "tilt";
+var userInput = 'ontouchstart' in document.documentElement ? "tilt" : "keyboard";
 var tiltTolerance = 5;
 var tiltSpeed = 0.2;
 

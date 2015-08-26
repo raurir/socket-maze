@@ -21,7 +21,7 @@ function gameLoop() {
 
 
 interface = interface();
-view = view(sw, sh, block, cursor);
+view = view();
 controller = controller(view);
 
 sockets = sockets({

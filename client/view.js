@@ -1,4 +1,4 @@
-var view = function(sw, sh, block, cursor) {
+var view = function() {
 
 var canvas = el("c")
 canvas.width = sw;
