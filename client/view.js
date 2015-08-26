@@ -10,6 +10,13 @@ var labyrinthCanvas = null;
 
 var mask = [];
 
+function log(msg) {
+  el("output").innerHTML = msg;
+}
+function msg(msg) {
+  el("messages").innerHTML += msg + "<br>";
+}
+
 function init(_labyrinth) {
   labyrinth = _labyrinth;
   pixelMask();
@@ -24,7 +31,6 @@ function pixelMask() {
     for (var x = 0; x < sw; x++) {
       var xi = Math.floor(x / block);
       var yi = Math.floor(y / block);
-      // mask.push( labyrinth[yi][xi] === "#" );
       mask[y][x] = labyrinth[yi][xi] === "#";
     }
   }
@@ -53,7 +59,7 @@ function error(colour, x, y, w, h) {
 }
 
 
-function render() {
+function render(playerPositions) {
 
   ctx.clearRect(0, 0, sw, sh);
   ctx.drawImage(labyrinthCanvas, 0, 0);
@@ -74,10 +80,13 @@ function render() {
 
 }
 
+
 return {
   render: render,
   init: init,
   error: error,
+  log: log,
+  msg: msg
 }
 
 

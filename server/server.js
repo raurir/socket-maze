@@ -55,13 +55,6 @@ game.init(function(labyrinth) {
       io.emit('chat message', msg);
     });
 
-    // socket.on('drawn', function(msg){
-    //   // console.log('drawn:', id, colour);
-    //   msg.colour = colour;
-    //   io.emit('drawn', msg);
-    // });
-
-
     socket.on('moved', function(position){
       console.log('moved:', position);
       io.emit('moved', {
@@ -76,15 +69,6 @@ game.init(function(labyrinth) {
     players++;
 
   });
-
-
-
-
-
-
-
-
-
 
 
 

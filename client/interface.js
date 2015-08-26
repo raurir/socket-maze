@@ -1,22 +1,40 @@
 var interface = function() {
 
+var userInput = "tilt";
+var tiltTolerance = 5;
+var tiltSpeed = 0.2;
+
 el("tiltTolerance").value = tiltTolerance;
 el("tiltSpeed").value = tiltSpeed;
 
+
+function listen(target, eventNames, callback) {
+  for (var i = 0; i < eventNames.length; i++) {
+    target.addEventListener(eventNames[i], callback);
+  }
+}
+
+function tilt(y, x) {
+  if (userInput == "keyboard") return;
+  keysDown.left = (x < tiltTolerance ? -x : 0) * tiltSpeed;
+  keysDown.right =( x > tiltTolerance ? x : 0) * tiltSpeed;
+  keysDown.up = (y < tiltTolerance ? -y : 0) * tiltSpeed;
+  keysDown.down =( y > tiltTolerance ? y : 0) * tiltSpeed;
+};
+
+function keyboard(e) {
+  if (userInput == "tilt") return;
+  var pressed = e.type === "keydown" ? 1 : 0;
+  switch (e.which) {
+    case 37 : case 100 : keysDown.left = pressed; break;
+    case 38 : case 104 : keysDown.up = pressed; break;
+    case 39 : case 102 : keysDown.right = pressed; break;
+    case 40 : case 98 : keysDown.down = pressed; break;
+  }
+  // con.log(e.which, pressed);
+};
+
 function init() {
-  // listen(canvas, ["mousedown", "touchstart"], function(e) {
-  //   e.preventDefault();
-  //   isInteracting = true;
-  // });
-  // listen(canvas, ["mousemove", "touchmove"], function(e) {
-  //   e.preventDefault();
-  //   if (e.changedTouches && e.changedTouches[0]) e = e.changedTouches[0];
-  //   draw(e);
-  // });
-  // listen(canvas, ["mouseup", "touchend"], function(e) {
-  //   e.preventDefault();
-  //   isInteracting = false;
-  // });
 
   listen(el("reset"), ["click"], function(e) { position.x = startPosition.x; position.y = startPosition.y; });
   listen(el("keyboard"), ["click"], function(e) { userInput = "keyboard"; });
@@ -30,17 +48,7 @@ function init() {
     el("m").value = "";
   });
 
-  listen(window, ["keydown", "keyup"], function(e) {
-    if (userInput == "tilt") return;
-    var pressed = e.type === "keydown" ? 1 : 0;
-    switch (e.which) {
-      case 37 : case 100 : keysDown.left = pressed; break;
-      case 38 : case 104 : keysDown.up = pressed; break;
-      case 39 : case 102 : keysDown.right = pressed; break;
-      case 40 : case 98 : keysDown.down = pressed; break;
-    }
-    // con.log(e.which, pressed);
-  });
+  listen(window, ["keydown", "keyup"], keyboard);
 
   if (window.DeviceOrientationEvent) {
     listen(window, ["deviceorientation"], function () {
@@ -62,9 +70,6 @@ return {
   init: init
 
 }
-
-
-
 
 
 }
