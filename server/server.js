@@ -7,7 +7,7 @@ var path = require('path');
 var maze = require('./maze');
 var constants = require('../constants');
 
-var port = 8010;
+var port = 8050;
 var connections = {};
 var con = console;
 
