@@ -13,29 +13,41 @@ var sw = block * cols, sh = block * rows;
 var playerPositions = [];
 var keysDown = { up: false, down: false, left: false, right: false};
 
+var games = [];
+
 function gameLoop() {
   view.render(playerPositions);
   controller.calc();
   requestAnimationFrame(gameLoop);
 }
 
-
-interface = interface();
+userInput = userInput();
+userInput.init();
 view = view();
 controller = controller(view);
 
 sockets = sockets({
-  onWelcome: function(welcomeMessage) {
-    // con.log("welcomeMessage", welcomeMessage);
+  onWelcome: function(response) {
+    con.log("onWelcome", response);
+    games = response.games;
+  },
 
-    mask = view.init(welcomeMessage.maze);
+  onGameCreated: function(gameData) {
 
-    controller.init(welcomeMessage, mask);
+    mask = view.init(gameData.maze);
 
-    interface.init();
+    con.log("onGameCreated", gameData);
+
+    controller.init(gameData, mask);
 
     gameLoop();
+
   },
+
+  onGameJoined: function(gameData) {
+    con.log('onGameJoined', gameData);
+  },
+
   onMessage: view.msg,
   onMove: function(playerMove){
     // con.log("moved", msg);

@@ -1,4 +1,4 @@
-var interface = function() {
+var userInput = function() {
 
 var userInput = 'ontouchstart' in document.documentElement ? "tilt" : "keyboard";
 var tiltTolerance = 5;
@@ -6,7 +6,6 @@ var tiltSpeed = 0.2;
 
 el("tiltTolerance").value = tiltTolerance;
 el("tiltSpeed").value = tiltSpeed;
-
 
 function listen(target, eventNames, callback) {
   for (var i = 0; i < eventNames.length; i++) {
@@ -36,7 +35,8 @@ function keyboard(e) {
 
 function init() {
 
-  listen(el("newgame"), ["click"], function(e) { newFa });
+  listen(el("newgame"), ["click"], function(e) { sockets.newGame({players: 2}); });
+  listen(el("joingame"), ["click"], function(e) { sockets.joinGame({gameID: games[0]}) });
 
   listen(el("reset"), ["click"], function(e) { position.x = startPosition.x; position.y = startPosition.y; });
   listen(el("keyboard"), ["click"], function(e) { userInput = "keyboard"; });

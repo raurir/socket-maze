@@ -2,17 +2,23 @@ var sockets = function(callbacks) {
   var socket = io();
 
   socket.on('welcome', callbacks.onWelcome);
-
-  socket.on('chat message', callbacks.onMessage);
-
+  socket.on('chat_message', callbacks.onMessage);
   socket.on('moved', callbacks.onMove);
+  socket.on('game_created', callbacks.onGameCreated);
+  socket.on('game_joined', callbacks.onGameJoined);
 
   return {
     move: function(position) {
       socket.emit('moved', position);
     },
     chat: function(msg) {
-      socket.emit('chat message', msg);
+      socket.emit('chat_message', msg);
+    },
+    newGame: function() {
+      socket.emit('new_game', {});
+    },
+    joinGame: function() {
+      socket.emit('join_game', {});
     }
   }
 

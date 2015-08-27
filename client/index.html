@@ -4,28 +4,34 @@
 </head>
 <body>
 <style>
-body { margin:0; padding:0; }
+body {
+  margin:0;
+  padding:0;
+}
 canvas {
 	border: 1px solid black;
 	image-rendering: pixelated;
 }
 </style>
 
-<button id="newgame">New game</button>
-<button id="joingame">Join game</button>
+<div>
+  <button id="newgame">New game</button>
+  <button id="joingame">Join game</button>
+</div>
 
 <canvas id="c"></canvas>
-<div id="messages"></div>
-<input type="text" id="m"></input>
-<button id="send">Send</button>
-<div id="output"></button>
+<div>
+  <div id="messages"></div>
+  <input type="text" id="m"></input>
+  <button id="send">Send</button>
+  <div id="output"></button>
 
-Tilt tolerance: <input type="number" id="tiltTolerance"></input><br>
-Tile speed: <input type="number" id="tiltSpeed"></input><br>
-<button id="keyboard">Keyboard</button>
-<button id="tilt">Tilt</button>
-<button id="reset">Reset player</button>
-
+  Tilt tolerance: <input type="number" id="tiltTolerance"></input><br>
+  Tile speed: <input type="number" id="tiltSpeed"></input><br>
+  <button id="keyboard">Keyboard</button>
+  <button id="tilt">Tilt</button>
+  <button id="reset">Reset player</button>
+</div>
 
 <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
 <!-- <script src="maze.js"></script> -->
@@ -33,7 +39,7 @@ Tile speed: <input type="number" id="tiltSpeed"></input><br>
 <script src="controller.js"></script>
 <script src="sockets.js"></script>
 <script src="view.js"></script>
-<script src="interface.js"></script>
+<script src="user_input.js"></script>
 <script src="client.js"></script>
 
 </body>
