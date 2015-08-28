@@ -67,9 +67,9 @@ function calc() {
 
 function init(playerData, _mask) {
   mask = _mask;
-  view.msg("Welcome player: " + playerData.playerIndex);
+  view.msg("Welcome player: " + playerData.index);
 
-  var index = playerData.playerIndex % 4;
+  var index = playerData.index % 4;
   switch(index) {
     // case 0 : position = {x: block * 1.5, y: block * 1.5}; break;
     // case 1 : position = {x: sw - block * 1.5 , y: block * 1.5}; break;
@@ -86,7 +86,7 @@ function init(playerData, _mask) {
 
   checkPosition(position);
 
-  // playerPositions[playerData.playerIndex] = playerData;
+  // playerPositions[playerData.index] = playerData;
 
   con.log("setPlayer", position, playerData);
 }

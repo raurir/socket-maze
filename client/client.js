@@ -27,25 +27,23 @@ view = view();
 controller = controller(view);
 
 sockets = sockets({
-  onWelcome: function(response) {
-    con.log("onWelcome", response);
-    games = response.games;
+  onWelcome: function(res) {
+    con.log("onWelcome", res);
+    games = res.games;
   },
 
-  onGameCreated: function(gameData) {
-
-    mask = view.init(gameData.maze);
-
-    con.log("onGameCreated", gameData);
-
-    controller.init(gameData, mask);
-
+  onGameCreated: function(res) {
+    con.log("onGameCreated", res);
+    mask = view.init(res.game.maze);
+    controller.init(res.player, mask);
     gameLoop();
-
   },
 
-  onGameJoined: function(gameData) {
-    con.log('onGameJoined', gameData);
+  onGameJoined: function(res) {
+    con.log('onGameJoined', res);
+    mask = view.init(res.game.maze);
+    controller.init(res.player, mask);
+    gameLoop();
   },
 
   onMessage: view.msg,

@@ -64,28 +64,25 @@ io.on('connection', function(socket){
 
     con.log("new_game creating", gameID);
 
-    games[gameID] = {
-      id: gameID,
-      room: room,
-      players: params.players,
-    };
+
 
     game.init(function(labyrinth) {
 
       con.log("new_game created", room, gameID, labyrinth.length);
 
-      games[gameID].maze = labyrinth;
+      games[gameID] = {
+        id: gameID,
+        maze: labyrinth,
+        room: room,
+        players: params.players,
+      };
 
       socket.join(room);
 
       io.to(room).emit('game_created', {
         games: games,
-        gameID: gameID,
         game: games[gameID],
-        maze: labyrinth,
-        colour: colour,
-        playerIndex: playerIndex,
-        players: params.players
+        player: {colour: colour, index: playerIndex},
       });
 
     });
@@ -96,8 +93,9 @@ io.on('connection', function(socket){
     con.log("join_game", gameID);
 
     socket.emit('game_joined', {
-      gameID: gameID,
-      game: games[gameID]
+      games: games,
+      game: games[gameID],
+      player: { colour: colour, index: playerIndex },
     });
 
   });
