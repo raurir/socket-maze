@@ -17,8 +17,9 @@ var sockets = function(callbacks) {
     newGame: function() {
       socket.emit('new_game', {});
     },
-    joinGame: function() {
-      socket.emit('join_game', {});
+    joinGame: function(gameID) {
+      con.log("sockets.joinGame", gameID)
+      socket.emit('join_game', gameID);
     }
   }
 

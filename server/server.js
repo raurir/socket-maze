@@ -57,41 +57,39 @@ io.on('connection', function(socket){
 
   // socket.broadcast.emit('hi');
 
-  var labyrinth = null;
-
   socket.on('new_game', function(params){
 
     var gameID = games.length;
+    var room = "game_" + gameID;
+
+    con.log("new_game creating", gameID);
 
     games[gameID] = {
       id: gameID,
+      room: room,
       players: params.players,
     };
 
-    if (labyrinth) {
-      con.log("new_game returning existing game", gameID);
-      socket.emit('game_created', {
-        maze: labyrinth
-      });
-    } else {
-      con.log("initialising game");
-      game.init(function(_labyrinth) {
-        labyrinth = _labyrinth;
-        con.log("new_game created", gameID, labyrinth.length);
+    game.init(function(labyrinth) {
 
-        games[gameID].maze = labyrinth;
+      con.log("new_game created", room, gameID, labyrinth.length);
 
-        socket.emit('game_created', {
-          games: games,
-          gameID: gameID,
-          game: games[gameID],
-          maze: labyrinth,
-          colour: colour,
-          playerIndex: playerIndex,
-          players: params.players
-        });
+      games[gameID].maze = labyrinth;
+
+      socket.join(room);
+
+      io.to(room).emit('game_created', {
+        games: games,
+        gameID: gameID,
+        game: games[gameID],
+        maze: labyrinth,
+        colour: colour,
+        playerIndex: playerIndex,
+        players: params.players
       });
-    }
+
+    });
+
   });
 
   socket.on('join_game', function(gameID){
@@ -101,7 +99,6 @@ io.on('connection', function(socket){
       gameID: gameID,
       game: games[gameID]
     });
-
 
   });
 

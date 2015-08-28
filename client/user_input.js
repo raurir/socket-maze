@@ -35,8 +35,12 @@ function keyboard(e) {
 
 function init() {
 
-  listen(el("newgame"), ["click"], function(e) { sockets.newGame({players: 2}); });
-  listen(el("joingame"), ["click"], function(e) { sockets.joinGame({gameID: games[0]}) });
+  listen(el("newgame"), ["click"], function(e) {
+    sockets.newGame({players: 2});
+  });
+  listen(el("joingame"), ["click"], function(e) {
+    sockets.joinGame(games[0].id);
+  });
 
   listen(el("reset"), ["click"], function(e) { position.x = startPosition.x; position.y = startPosition.y; });
   listen(el("keyboard"), ["click"], function(e) { userInput = "keyboard"; });

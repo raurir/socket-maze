@@ -29,7 +29,7 @@ var maze = function () {
     }
   };
 
-  field = [];
+
   frontier = [];
 
   carve = function(y, x) {
@@ -226,7 +226,7 @@ var maze = function () {
   }
 
   init = function(cb) {
-
+    field = [];
     for (var y = 0; y < yhigh; y++) {
       var row = [];
       for (var x = 0; x < xwide; x++) {
