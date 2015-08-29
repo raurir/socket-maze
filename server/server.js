@@ -12,50 +12,29 @@ var con = console;
 
 var game = maze();
 
-var players = 0;
-
-var connections = {};
+var connections = [];
 var games = [];
 
 io.on('connection', function(socket){
   var connectionID = socket.conn.id;
+  var playerIndex = connections.length;
 
-  con.log('a user connected', connectionID);
+  con.log('a user connected', playerIndex, connectionID);
 
   var colour = "rgba(" + [col(), col(), col(), 1] + ")";
   function col() { return Math.round(Math.random() * 255); }
 
-  var playerIndex = players;
-
-  connections[connectionID] = {
+  connections[playerIndex] = {
     id: connectionID,
-    playerIndex: playerIndex
+    index: playerIndex
   }
-
-
-/*
-  connections[id] = {
-    name: id,
-    colour: colour,
-    playerIndex: playerIndex
-  }
-
-
-  socket.emit('welcome', {
-    name: connections[id].name,
-    colour: colour,
-    maze: labyrinth,
-    playerIndex: playerIndex
-  });
-*/
 
   socket.emit('welcome', {
     id: connectionID,
+    index: playerIndex,
     games: games
   });
 
-
-  // socket.broadcast.emit('hi');
 
   socket.on('new_game', function(params){
 
@@ -63,8 +42,6 @@ io.on('connection', function(socket){
     var room = "game_" + gameID;
 
     con.log("new_game creating", gameID);
-
-
 
     game.init(function(labyrinth) {
 
@@ -92,18 +69,28 @@ io.on('connection', function(socket){
   socket.on('join_game', function(gameID){
     con.log("join_game", gameID);
 
-    socket.emit('game_joined', {
+    var room = "game_" + gameID;
+
+    socket.join(room);
+
+    io.to(room).emit('game_joined', {
       games: games,
       game: games[gameID],
-      player: { colour: colour, index: playerIndex },
+      player: {colour: colour, index: playerIndex},
     });
+
+    // socket.emit('game_joined', {
+    //   games: games,
+    //   game: games[gameID],
+    //   player: { colour: colour, index: playerIndex },
+    // });
 
   });
 
 
   socket.on('disconnect', function(){
-    console.log('user disconnected', connectionID);
-    connections[connectionID] = null;
+    console.log('user disconnected', playerIndex);
+    connections[playerIndex] = null;
   });
 
   socket.on('chat_message', function(msg){
@@ -111,29 +98,24 @@ io.on('connection', function(socket){
     io.emit('chat_message', msg);
   });
 
-  socket.on('moved', function(position){
-    // console.log('moved:', position);
-    io.emit('moved', {
+
+  socket.on('moved', function(move){
+    var gameID = move.gameID;
+    var position = move.position;
+    var room = "game_" + gameID;
+    console.log('moved:', move, room);
+    io.to(room).emit('moved', {
       position: position,
       colour: colour,
       id: connectionID,
       playerIndex: playerIndex
     });
   });
+    // socket.broadcast.to(id).emit('my message', msg);
 
 
-  players++;
 
 });
-
-
-
-
-
-
-
-
-
 
 
 
@@ -145,17 +127,22 @@ io.on('connection', function(socket){
 // con.log("constants", constants);
 
 app.use(express.static(__dirname + '/../client'));
-
 app.get('/', function(req, res){
   res.sendFile(req.path, {root: "../client/"});
-});
-app.get('/constants.js', function(req, res){
+}).get('/constants.js', function(req, res){
   res.sendFile(req.path, {root: __dirname + "/../"});
-});
-app.get('*.js', function(req, res){
+}).get('*.js', function(req, res){
   res.sendFile(req.path, {root: "../client/"});
+}).get('/status/:type?', function(req, res){
+  con.log("type", req.params);
+  var response = {};
+  switch (req.params.type) {
+    case "connections" : response.connections = connections; break;
+    case "games" : response.games = games; break;
+    default : response = {connections: connections, games: games}; break;
+  }
+  res.end(JSON.stringify(response));
 });
 
-http.listen(port, function(){
-  console.log('listening on port:', port);
-});
+http.listen(port, function(){ console.log('listening on port:', port); });
+

@@ -35,7 +35,7 @@ function checkPosition(pos) {
   }
 }
 
-function calc() {
+function calc(gameID) {
   var directionsOk = checkPosition({x: Math.round(position.x), y: Math.round(position.y)});
 
   var newPosition = {
@@ -56,7 +56,7 @@ function calc() {
   position.y = Math.round(newPosition.y);
 
   if (position.x != lastPosition.x || position.y != lastPosition.y) {
-    sockets.move(position);
+    sockets.move(gameID, position);
   }
 
   lastPosition.x = position.x;

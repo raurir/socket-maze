@@ -7,11 +7,7 @@ var tiltSpeed = 0.2;
 el("tiltTolerance").value = tiltTolerance;
 el("tiltSpeed").value = tiltSpeed;
 
-function listen(target, eventNames, callback) {
-  for (var i = 0; i < eventNames.length; i++) {
-    target.addEventListener(eventNames[i], callback);
-  }
-}
+
 
 function tilt(y, x) {
   if (userInput == "keyboard") return;
@@ -39,8 +35,17 @@ function init() {
     sockets.newGame({players: 2});
   });
   listen(el("joingame"), ["click"], function(e) {
-    sockets.joinGame(games[0].id);
+    view.overlay.show({
+      choices: games,
+      callback: function(index) {
+        con.log('callback', games, index);
+        sockets.joinGame(view.overlay.selection);
+        view.overlay.hide();
+      }
+    });
   });
+
+
 
   listen(el("reset"), ["click"], function(e) { position.x = startPosition.x; position.y = startPosition.y; });
   listen(el("keyboard"), ["click"], function(e) { userInput = "keyboard"; });

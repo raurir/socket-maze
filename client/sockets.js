@@ -8,8 +8,10 @@ var sockets = function(callbacks) {
   socket.on('game_joined', callbacks.onGameJoined);
 
   return {
-    move: function(position) {
-      socket.emit('moved', position);
+    move: function(gameID, position) {
+      var p = {gameID: gameID, position: position};
+      con.log(p);
+      socket.emit('moved', p);
     },
     chat: function(msg) {
       socket.emit('chat_message', msg);
