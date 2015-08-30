@@ -17,103 +17,122 @@ var games = [];
 
 io.on('connection', function(socket){
   var connectionID = socket.conn.id;
-  var playerIndex = connections.length;
+  var playerIndex = -1;
+  var gameID = null;
 
-  con.log('a user connected', playerIndex, connectionID);
+  con.log('a user connected', connectionID);
 
-  var colour = "rgba(" + [col(), col(), col(), 1] + ")";
-  function col() { return Math.round(Math.random() * 255); }
-
-  connections[playerIndex] = {
-    id: connectionID,
-    index: playerIndex
+  var colour = {r: col(), g: col(), b: col()};
+  function col() { 
+    return Math.round(Math.random() * 255);
   }
+  function getGame() {
+    return {
+      games: games,
+      game: games[gameID],
+      player: {colour: colour, index: playerIndex},
+    };
+  };
+  function getRoom(id) {
+    return "game_" + id;
+  }
+
+  function addPlayer() {
+    if (games[gameID]) { 
+      if (games[gameID].players.indexOf(connectionID) == -1) {
+        games[gameID].players.push(connectionID);
+      } else {
+        con.log("addPlayer player already in game", gameID);
+      }
+    } else {
+      con.log("addPlayer no game defined - gameID:", gameID);
+      return -1;
+    }
+    return games[gameID].players.indexOf(connectionID);
+  }
+
+  function removePlayer() {
+    if (games[gameID]) { 
+      var index = games[gameID].players.indexOf(connectionID);
+      if (index == -1) {
+        con.log("removePlayer player not in game", gameID);
+      } else {
+        games[gameID].players.splice(index, 1);
+      }
+    } else {
+      con.log("removePlayer no game defined - gameID:", gameID);
+    }
+  }
+
+
+  connections.push(connectionID);
 
   socket.emit('welcome', {
     id: connectionID,
-    index: playerIndex,
     games: games
   });
 
 
   socket.on('new_game', function(params){
-
-    var gameID = games.length;
-    var room = "game_" + gameID;
-
+    gameID = games.length;
+    var room = getRoom(gameID);
     con.log("new_game creating", gameID);
-
     game.init(function(labyrinth) {
-
-      con.log("new_game created", room, gameID, labyrinth.length);
-
+      con.log("new_game created", room, labyrinth.length);
       games[gameID] = {
         id: gameID,
+        colour: {r: col(), g: col(), b: col()},
         maze: labyrinth,
         room: room,
-        players: params.players,
+        maxPlayers: params.players,
+        players: [],
+        positions: []
       };
-
+      playerIndex = addPlayer();
       socket.join(room);
-
-      io.to(room).emit('game_created', {
-        games: games,
-        game: games[gameID],
-        player: {colour: colour, index: playerIndex},
-      });
-
+      io.to(room).emit('game_created', getGame());
     });
-
   });
 
-  socket.on('join_game', function(gameID){
+  socket.on('join_game', function(id){
+    gameID = id;
     con.log("join_game", gameID);
-
-    var room = "game_" + gameID;
-
+    var room = getRoom(gameID);
+    playerIndex = addPlayer();
     socket.join(room);
-
-    io.to(room).emit('game_joined', {
-      games: games,
-      game: games[gameID],
-      player: {colour: colour, index: playerIndex},
-    });
-
-    // socket.emit('game_joined', {
-    //   games: games,
-    //   game: games[gameID],
-    //   player: { colour: colour, index: playerIndex },
-    // });
-
-  });
-
-
-  socket.on('disconnect', function(){
-    console.log('user disconnected', playerIndex);
-    connections[playerIndex] = null;
+    io.to(room).emit('game_joined', getGame());
   });
 
   socket.on('chat_message', function(msg){
     console.log('message: ' + msg);
     io.emit('chat_message', msg);
+    // socket.broadcast.to(id).emit('my message', msg);
   });
-
 
   socket.on('moved', function(move){
-    var gameID = move.gameID;
-    var position = move.position;
-    var room = "game_" + gameID;
-    console.log('moved:', move, room);
+    // con.log(move, playerIndex);
+    var room = getRoom(move.gameID);
+
+    games[move.gameID].positions[playerIndex] = {
+      position: move.position,
+      colour: colour
+    }
+
     io.to(room).emit('moved', {
-      position: position,
-      colour: colour,
-      id: connectionID,
-      playerIndex: playerIndex
+      positions: games[move.gameID].positions
+      // position: move.position,
+      // colour: colour,
+      // id: connectionID,
+      // playerIndex: playerIndex
     });
   });
-    // socket.broadcast.to(id).emit('my message', msg);
 
-
+  socket.on('disconnect', function(){
+    console.log('user disconnected', connectionID);
+    removePlayer();
+    connections.splice(connections.indexOf(connectionID), 1);
+    connectionID = null;
+  });
 
 });
 
@@ -135,12 +154,13 @@ app.get('/', function(req, res){
   res.sendFile(req.path, {root: "../client/"});
 }).get('/status/:type?', function(req, res){
   con.log("type", req.params);
-  var response = {};
+  var response = {}; 
   switch (req.params.type) {
     case "connections" : response.connections = connections; break;
     case "games" : response.games = games; break;
     default : response = {connections: connections, games: games}; break;
   }
+  if (response.games) { var i = 0; while(response.games[i]) { response.games[i++].maze = "maze-blanked"; }; }
   res.end(JSON.stringify(response));
 });
 

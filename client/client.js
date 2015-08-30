@@ -15,6 +15,7 @@ var keysDown = { up: false, down: false, left: false, right: false};
 
 var games = [];
 var gameID = null;
+var gameRunning = false;
 
 function listen(target, eventNames, callback) {
   for (var i = 0; i < eventNames.length; i++) {
@@ -28,10 +29,18 @@ function remove(target, eventNames, callback) {
   }
 }
 
+function gameReady(res) {
+  var mask = view.init(res.game);
+  gameID = res.game.id;
+  controller.init(res.player, mask);
+  gameRunning = true;
+}
 
 function gameLoop() {
-  view.render(playerPositions);
-  controller.calc(gameID);
+  if (gameRunning) {
+    view.render(playerPositions);
+    controller.calc(gameID);
+  }
   requestAnimationFrame(gameLoop);
 }
 
@@ -44,28 +53,25 @@ sockets = sockets({
   onWelcome: function(res) {
     con.log("onWelcome", res);
     games = res.games;
+    gameLoop();
   },
 
   onGameCreated: function(res) {
     con.log("onGameCreated", res);
-    mask = view.init(res.game.maze);
-    gameID = res.game.id;
-    controller.init(res.player, mask);
-    gameLoop();
+    gameReady(res);
   },
 
   onGameJoined: function(res) {
     con.log('onGameJoined', res);
-    mask = view.init(res.game.maze);
-    gameID = res.game.id;
-    controller.init(res.player, mask);
-    gameLoop();
+    gameReady(res);
   },
 
   onMessage: view.msg,
   onMove: function(playerMove){
+    con.log("onMove", playerMove);
     // con.log("moved", msg);
-    playerPositions[playerMove.playerIndex] = playerMove;
+    // playerPositions[playerMove.playerIndex] = playerMove;
+    playerPositions = playerMove.positions;
   }
 });
 

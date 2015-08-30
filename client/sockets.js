@@ -10,7 +10,7 @@ var sockets = function(callbacks) {
   return {
     move: function(gameID, position) {
       var p = {gameID: gameID, position: position};
-      con.log(p);
+      // con.log(p);
       socket.emit('moved', p);
     },
     chat: function(msg) {
@@ -20,7 +20,7 @@ var sockets = function(callbacks) {
       socket.emit('new_game', {});
     },
     joinGame: function(gameID) {
-      con.log("sockets.joinGame", gameID)
+      // con.log("sockets.joinGame", gameID);
       socket.emit('join_game', gameID);
     }
   }
