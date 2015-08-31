@@ -1,11 +1,11 @@
+var con = console;
+
+
 function el(id) {
   return document.getElementById(id);
 }
 
-var con = console;
-
-var cursor = constants.block / 2;
-var sw = constants.sw, sh = constants.sh;
+var sw = constants.sw, sh = constants.sh, cursor = constants.cursor;;
 
 var playerPositions = [];
 var keysDown = { up: false, down: false, left: false, right: false};
@@ -39,6 +39,7 @@ function gameLoop() {
     controller.calc(gameID);
   }
   requestAnimationFrame(gameLoop);
+  // setTimeout(gameLoop, 500);
 }
 
 view = view();
@@ -74,8 +75,13 @@ sockets = sockets({
     // con.log("onMove", playerMove);
     // con.log("moved", msg);
     // playerPositions[playerMove.playerIndex] = playerMove;
-    playerPositions = playerMove.positions;
-  }
+    playerPositions = playerMove.players;
+  },
+
+  onPlayerPing: function(pingDetails){
+    view.playerPing(pingDetails);
+  },
+
 });
 
 

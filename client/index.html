@@ -5,8 +5,10 @@
 <body>
 <style>
 body {
-  margin:0;
-  padding:0;
+  background: black;
+  margin: 0;
+  padding: 0;
+  font-family: monospace;
 }
 canvas {
   border: 1px solid black;
@@ -15,6 +17,8 @@ canvas {
 #game-status {
   background: #333;
   color: white;
+  font-size: 10px;
+  padding: 2px;
 }
 #overlay {
   display: none;
@@ -58,7 +62,8 @@ canvas {
   <button id="reset">Reset player</button>
 </div>
 
-<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+<!-- <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script> -->
+<script src="socket.io-1.2.0.js"></script>
 <script src="constants.js"></script>
 <script src="controller.js"></script>
 <script src="sockets.js"></script>
@@ -66,6 +71,7 @@ canvas {
 <script src="view_overlay.js"></script>
 <script src="user_input.js"></script>
 <script src="client.js"></script>
+<!-- <script src="test_arr_obj.js"></script> -->
 
 </body>
 

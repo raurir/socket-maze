@@ -27,13 +27,13 @@ function init(game) {
 function drawStatus(game) {
   var msg = [];
   for (var i = 0; i < game.players.length; i++) {
-    msg.push(i + ":" + game.players[i]);
+    msg.push(i + ": " + game.players[i].id);
   };
   el("game-status").innerHTML = msg.join("<br>");
 }
 
 function pixelMask(labyrinth) {
-  con.log("pixelMask", labyrinth);
+  // con.log("pixelMask", labyrinth);
   for (var y = 0; y < sh; y++) {
     mask[y] = [];
     for (var x = 0; x < sw; x++) {
@@ -54,7 +54,7 @@ function drawMaze(colour) {
   for (var y = 0; y < sh; y++) {
     for (var x = 0; x < sw; x++) {
       // mask.push( labyrinth[yi][xi] === "#" );
-      var a = Math.random() * 0.5 + (mask[y][x] ? 0.1 : 0.5);
+      var a = Math.random() * 0.3 + (mask[y][x] ? 0.6 : 0.2);
       ctx.fillStyle = "rgba(" + [colour.r, colour.g, colour.b, a] + ")";
       ctx.fillRect(x, y, 1, 1);
     }
@@ -68,36 +68,47 @@ function error(colour, x, y, w, h) {
 
 
 function render(playerPositions) {
-
   ctx.clearRect(0, 0, sw, sh);
   ctx.drawImage(labyrinthCanvas, 0, 0);
-
-  // con.log("playerPositions[i];", playerPositions);
-
-  for (var i = 0; i < playerPositions.length; i++) {
-    var position = playerPositions[i];
-    if (position) {
-
-      // con.log("view render", position);
-      // ctx.fillStyle = "rgba(0,0,0,0.5)";
-      // ctx.fillRect(player.position.x, player.position.y, cursor, cursor);
-      // var r = player.colour.r, g = player.colour.g, b = player.colour.b;
-      var r = g = b = 100;
-      ctx.fillStyle = "rgba(" + [r, g, b, 1] + ")";
-      ctx.fillRect(position.x, position.y, cursor, cursor);
-    }
-  };
-
+  renderPlayers(playerPositions);
 }
 
+function renderPlayers(playerPositions) {
+  for (var i = 0, il = playerPositions.length; i < il; i++) {
+    var player = playerPositions[i];
+    // con.log("view render", position);
+    // ctx.fillStyle = "rgba(0,0,0,0.5)";
+    // ctx.fillRect(player.position.x, player.position.y, cursor, cursor);
+    var r = player.colour.r, g = player.colour.g, b = player.colour.b;
+    // var r = g = b = 100;
+    ctx.fillStyle = "rgba(" + [r, g, b, 1] + ")";
+    ctx.fillRect(player.position.x, player.position.y, cursor, cursor);
+    
+    var circleRads = Math.PI * 2;
+    ctx.strokeStyle = ctx.fillStyle;
+    ctx.beginPath();
+    ctx.arc(player.position.x, player.position.y, pingSize, 0, circleRads, false);
+    ctx.closePath();
+    ctx.stroke();
 
+  };
+  pingSize -= pingSize * 0.1;
+}
+
+var pingSize = 0;
+function playerPing(pingDetails) {
+  con.log('ping');
+  pingSize = 100;
+}
 
 return {
-  render: render,
-  init: init,
   error: error,
+  init: init,
   log: log,
-  msg: msg
+  msg: msg,
+  playerPing: playerPing,
+  render: render,
+  renderPlayers: renderPlayers,
 }
 
 

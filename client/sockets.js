@@ -7,6 +7,7 @@ var sockets = function(callbacks) {
   socket.on('game_created', callbacks.onGameCreated);
   socket.on('game_joined', callbacks.onGameJoined);
   socket.on('game_changed', callbacks.onGameChanged);
+  socket.on('player_pinged', callbacks.onPlayerPing);
 
   return {
     move: function(gameID, position) {
@@ -23,6 +24,10 @@ var sockets = function(callbacks) {
     joinGame: function(gameID) {
       // con.log("sockets.joinGame", gameID);
       socket.emit('join_game', gameID);
+    },
+    ping: function(pingDetails) {
+      con.log("emitting... ");
+      socket.emit('player_ping', pingDetails);
     }
   }
 

@@ -55,23 +55,37 @@ function calc(gameID) {
 
   if (position.x != lastPosition.x || position.y != lastPosition.y) {
     sockets.move(gameID, position);
+
+    if (Math.random() > 0.99) {
+      sockets.ping(gameID, {type: "flash"});
+    }
   }
+
+  
+  // view.renderPlayers([{position: position, id: 3, colour: {r: 30, g: 30, b: 200}}]);
+  
 
   lastPosition.x = position.x;
   lastPosition.y = position.y;
 
 }
 
+var currentGameID = null;
 
 function init(gameData, _mask) {
+
+  if (currentGameID === gameData.game.id) {
+    return con.log("controller.init - already joined");
+  };
+
   mask = _mask;
 
   var playerIndex = gameData.player.index;
   view.msg("Welcome player: " + playerIndex);
 
-  con.log("controller init - gameData:", gameData);
+  con.log("controller.init - gameData:", gameData);
 
-  var pos = gameData.game.positions[playerIndex];
+  var pos = gameData.game.players[playerIndex].position;
 
   position = {x: pos.x, y: pos.y};
   lastPosition = {x: pos.x, y: pos.y};
@@ -82,6 +96,7 @@ function init(gameData, _mask) {
 
   // playerPositions[playerData.index] = playerData;
 
+  currentGameID = gameData.game.id;
 }
 
 

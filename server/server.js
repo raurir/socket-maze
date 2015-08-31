@@ -40,14 +40,16 @@ io.on('connection', function(socket){
 
 
   function getPlayerStart() {
-    var startPosition = {};
+    var pos = {};
+    con.log("getPlayerStart", playerIndex);
+    var offset = constants.cursor / 2;
     switch(playerIndex) {
-      case 0 : startPosition = {x: constants.block * 2, y: constants.block * 2}; break;
-      case 1 : startPosition = {x: constants.sw - constants.block * 2 , y: constants.block * 2}; break;
-      case 2 : startPosition = {x: constants.sw - constants.block * 2 , y: constants.sh - constants.block * 2}; break;
-      case 3 : startPosition = {x: constants.block * 2 , y: constants.sh - constants.block * 2}; break;
+      case 0 : pos = {x: -offset + constants.block * 2, y: -offset + constants.block * 2}; break;
+      case 1 : pos = {x: -offset + constants.sw - constants.block * 2 , y: -offset + constants.block * 2}; break;
+      case 2 : pos = {x: -offset + constants.sw - constants.block * 2 , y: -offset + constants.sh - constants.block * 2}; break;
+      case 3 : pos = {x: -offset + constants.block * 2 , y: -offset + constants.sh - constants.block * 2}; break;
     }
-    return startPosition;
+    return pos;
   }
 
 
@@ -61,10 +63,15 @@ io.on('connection', function(socket){
 
   function addPlayer() {
     if (games[gameID]) {
-      if (games[gameID].players.indexOf(connectionID) == -1) {
-        games[gameID].players.push(connectionID);
-        playerIndex = games[gameID].players.indexOf(connectionID);
-        games[gameID].positions[playerIndex] = getPlayerStart();
+      if (games[gameID].playerIndexes.indexOf(connectionID) == -1) {
+        games[gameID].playerIndexes.push(connectionID);
+        playerIndex = games[gameID].playerIndexes.indexOf(connectionID);
+
+        games[gameID].players[playerIndex] = {
+          id: connectionID,
+          position: getPlayerStart(),
+          colour: colour
+        }
 
       } else {
         con.log("addPlayer player already in game", gameID);
@@ -77,12 +84,13 @@ io.on('connection', function(socket){
 
   function removePlayer() {
     if (games[gameID]) {
-      var index = games[gameID].players.indexOf(connectionID);
+      var index = games[gameID].playerIndexes.indexOf(connectionID);
       if (index == -1) {
         con.log("removePlayer player not in game", gameID);
       } else {
+        games[gameID].playerIndexes.splice(index, 1);
         games[gameID].players.splice(index, 1);
-
+        con.log("removePlayer", index);
         if (games[gameID].players.length == 0) {
           con.log("everyone has left the game")
           games.splice(gameID, 1);
@@ -116,7 +124,7 @@ io.on('connection', function(socket){
         room: room,
         maxPlayers: params.players,
         players: [],
-        positions: []
+        playerIndexes: []
       };
       addPlayer();
 
@@ -145,20 +153,29 @@ io.on('connection', function(socket){
     // var room = getRoom(move.gameID);
     var room = getRoom(gameID);
 
-    games[gameID].positions[playerIndex] = {
-      playerID: connectionID,
+    games[gameID].players[playerIndex] = {
+      id: connectionID,
       position: move.position,
       colour: colour
-    }
+    };
+    games[gameID].playerIndexes[playerIndex] = connectionID;
 
     io.to(room).emit('moved', {
-      positions: games[move.gameID].positions
+      players: games[move.gameID].players
       // position: move.position,
       // colour: colour,
       // id: connectionID,
       // playerIndex: playerIndex
     });
   });
+
+  socket.on('player_ping', function(pingDetails){
+    var room = getRoom(gameID);
+    io.to(room).emit('player_pinged', pingDetails);
+  });
+
+
+
 
   socket.on('disconnect', function(){
     console.log('user disconnected', connectionID);
@@ -191,12 +208,14 @@ app.get('/', function(req, res){
 }).get('*.js', function(req, res){
   res.sendFile(req.path, {root: "../client/"});
 }).get('/status/:type?', function(req, res){
-  con.log("type", req.params);
+
+  function clone(a) { return JSON.parse(JSON.stringify(a));}
+
   var response = {};
   switch (req.params.type) {
-    case "connections" : response.connections = connections; break;
+    case "connections" : response.connections = clone(connections); break;
     case "games" : response.games = games; break;
-    default : response = {connections: connections, games: games}; break;
+    default : response = {connections: clone(connections), games: clone(games)}; break;
   }
   if (response.games) { var i = 0; while(response.games[i]) { response.games[i++].maze = "maze-blanked"; }; }
   res.end(JSON.stringify(response));
