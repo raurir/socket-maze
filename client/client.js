@@ -45,6 +45,7 @@ function gameLoop() {
 }
 
 view = view();
+overlay = overlay();
 userInput = userInput();
 userInput.init();
 controller = controller(view);

@@ -35,12 +35,12 @@ function init() {
     sockets.newGame({players: 2});
   });
   listen(el("joingame"), ["click"], function(e) {
-    view.overlay.show({
+    overlay.show({
       choices: games,
       callback: function(index) {
         con.log('callback', games, index);
         sockets.joinGame(view.overlay.selection);
-        view.overlay.hide();
+        overlay.hide();
       }
     });
   });
