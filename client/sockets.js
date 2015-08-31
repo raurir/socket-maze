@@ -6,6 +6,7 @@ var sockets = function(callbacks) {
   socket.on('moved', callbacks.onMove);
   socket.on('game_created', callbacks.onGameCreated);
   socket.on('game_joined', callbacks.onGameJoined);
+  socket.on('game_changed', callbacks.onGameChanged);
 
   return {
     move: function(gameID, position) {

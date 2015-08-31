@@ -4,11 +4,8 @@ function el(id) {
 
 var con = console;
 
-var block = 20;
-var cursor = block / 2;
-var cols = constants.cols;
-var rows = constants.rows;
-var sw = block * cols, sh = block * rows;
+var cursor = constants.block / 2;
+var sw = constants.sw, sh = constants.sh;
 
 var playerPositions = [];
 var keysDown = { up: false, down: false, left: false, right: false};
@@ -32,7 +29,7 @@ function remove(target, eventNames, callback) {
 function gameReady(res) {
   var mask = view.init(res.game);
   gameID = res.game.id;
-  controller.init(res.player, mask);
+  controller.init(res, mask);
   gameRunning = true;
 }
 
@@ -67,9 +64,14 @@ sockets = sockets({
     gameReady(res);
   },
 
+  onGameChanged: function(res) {
+    con.log('onGameChanged', res);
+    gameReady(res);
+  },
+
   onMessage: view.msg,
   onMove: function(playerMove){
-    con.log("onMove", playerMove);
+    // con.log("onMove", playerMove);
     // con.log("moved", msg);
     // playerPositions[playerMove.playerIndex] = playerMove;
     playerPositions = playerMove.positions;

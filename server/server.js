@@ -23,7 +23,7 @@ io.on('connection', function(socket){
   con.log('a user connected', connectionID);
 
   var colour = {r: col(), g: col(), b: col()};
-  function col() { 
+  function col() {
     return Math.round(Math.random() * 255);
   }
   function getGame() {
@@ -37,27 +37,57 @@ io.on('connection', function(socket){
     return "game_" + id;
   }
 
+
+
+  function getPlayerStart() {
+    var startPosition = {};
+    switch(playerIndex) {
+      case 0 : startPosition = {x: constants.block * 2, y: constants.block * 2}; break;
+      case 1 : startPosition = {x: constants.sw - constants.block * 2 , y: constants.block * 2}; break;
+      case 2 : startPosition = {x: constants.sw - constants.block * 2 , y: constants.sh - constants.block * 2}; break;
+      case 3 : startPosition = {x: constants.block * 2 , y: constants.sh - constants.block * 2}; break;
+    }
+    return startPosition;
+  }
+
+
+
+
+
+
+
+
+
+
   function addPlayer() {
-    if (games[gameID]) { 
+    if (games[gameID]) {
       if (games[gameID].players.indexOf(connectionID) == -1) {
         games[gameID].players.push(connectionID);
+        playerIndex = games[gameID].players.indexOf(connectionID);
+        games[gameID].positions[playerIndex] = getPlayerStart();
+
       } else {
         con.log("addPlayer player already in game", gameID);
       }
     } else {
       con.log("addPlayer no game defined - gameID:", gameID);
-      return -1;
     }
-    return games[gameID].players.indexOf(connectionID);
+
   }
 
   function removePlayer() {
-    if (games[gameID]) { 
+    if (games[gameID]) {
       var index = games[gameID].players.indexOf(connectionID);
       if (index == -1) {
         con.log("removePlayer player not in game", gameID);
       } else {
         games[gameID].players.splice(index, 1);
+
+        if (games[gameID].players.length == 0) {
+          con.log("everyone has left the game")
+          games.splice(gameID, 1);
+        }
+
       }
     } else {
       con.log("removePlayer no game defined - gameID:", gameID);
@@ -88,7 +118,8 @@ io.on('connection', function(socket){
         players: [],
         positions: []
       };
-      playerIndex = addPlayer();
+      addPlayer();
+
       socket.join(room);
       io.to(room).emit('game_created', getGame());
     });
@@ -98,7 +129,7 @@ io.on('connection', function(socket){
     gameID = id;
     con.log("join_game", gameID);
     var room = getRoom(gameID);
-    playerIndex = addPlayer();
+    addPlayer();
     socket.join(room);
     io.to(room).emit('game_joined', getGame());
   });
@@ -110,10 +141,12 @@ io.on('connection', function(socket){
   });
 
   socket.on('moved', function(move){
-    // con.log(move, playerIndex);
-    var room = getRoom(move.gameID);
+    con.log("moved", move, playerIndex);
+    // var room = getRoom(move.gameID);
+    var room = getRoom(gameID);
 
-    games[move.gameID].positions[playerIndex] = {
+    games[gameID].positions[playerIndex] = {
+      playerID: connectionID,
       position: move.position,
       colour: colour
     }
@@ -132,6 +165,11 @@ io.on('connection', function(socket){
     removePlayer();
     connections.splice(connections.indexOf(connectionID), 1);
     connectionID = null;
+
+    var room = getRoom(gameID);
+
+    io.to(room).emit('game_changed', getGame());
+
   });
 
 });
@@ -154,7 +192,7 @@ app.get('/', function(req, res){
   res.sendFile(req.path, {root: "../client/"});
 }).get('/status/:type?', function(req, res){
   con.log("type", req.params);
-  var response = {}; 
+  var response = {};
   switch (req.params.type) {
     case "connections" : response.connections = connections; break;
     case "games" : response.games = games; break;

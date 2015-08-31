@@ -65,30 +65,24 @@ function calc(gameID) {
 }
 
 
-function init(playerData, _mask) {
+function init(gameData, _mask) {
+  var playerData = gameData.
   mask = _mask;
   view.msg("Welcome player: " + playerData.index);
 
-  var index = playerData.index % 4;
-  switch(index) {
-    // case 0 : position = {x: block * 1.5, y: block * 1.5}; break;
-    // case 1 : position = {x: sw - block * 1.5 , y: block * 1.5}; break;
-    // case 2 : position = {x: sw - block * 1.5 , y: sh - block * 1.5}; break;
-    // case 3 : position = {x: block * 1.5 , y: sh - block * 1.5}; break;
-    case 0 : startPosition = {x: block * 2, y: block * 2}; break;
-    case 1 : startPosition = {x: sw - block * 2 , y: block * 2}; break;
-    case 2 : startPosition = {x: sw - block * 2 , y: sh - block * 2}; break;
-    case 3 : startPosition = {x: block * 2 , y: sh - block * 2}; break;
+  con.log("controller init - playerData:", playerData);
 
-  }
+  return
   position = {x: startPosition.x, y: startPosition.y};
   lastPosition = {x: startPosition.x, y: startPosition.y};
 
   checkPosition(position);
 
+  sockets.move(gameID, position);
+
   // playerPositions[playerData.index] = playerData;
 
-  con.log("setPlayer", position, playerData);
+
 }
 
 

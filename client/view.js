@@ -17,9 +17,19 @@ function msg(msg) {
 }
 
 function init(game) {
+  con.log("init", game);
+  drawStatus(game);
   pixelMask(game.maze);
   drawMaze(game.colour);
   return mask;
+}
+
+function drawStatus(game) {
+  var msg = [];
+  for (var i = 0; i < game.players.length; i++) {
+    msg.push(i + ":" + game.players[i]);
+  };
+  el("game-status").innerHTML = msg.join("<br>");
 }
 
 function pixelMask(labyrinth) {
@@ -27,8 +37,8 @@ function pixelMask(labyrinth) {
   for (var y = 0; y < sh; y++) {
     mask[y] = [];
     for (var x = 0; x < sw; x++) {
-      var xi = Math.floor(x / block);
-      var yi = Math.floor(y / block);
+      var xi = Math.floor(x / constants.block);
+      var yi = Math.floor(y / constants.block);
       mask[y][x] = labyrinth[yi][xi] === "#";
     }
   }

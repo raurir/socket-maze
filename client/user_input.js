@@ -39,7 +39,7 @@ function init() {
       choices: games,
       callback: function(index) {
         con.log('callback', games, index);
-        sockets.joinGame(view.overlay.selection);
+        sockets.joinGame(overlay.selection);
         overlay.hide();
       }
     });
