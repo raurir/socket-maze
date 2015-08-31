@@ -56,6 +56,7 @@ function init() {
   listen(el("joingame"), ["click"], function(e) {
     overlay.show({
       choices: games,
+      load: true,
       callback: function(index) {
         con.log('callback', games, index);
         sockets.joinGame(overlay.selection);

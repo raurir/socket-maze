@@ -207,6 +207,8 @@ app.get('/', function(req, res){
   res.sendFile(req.path, {root: __dirname + "/../"});
 }).get('*.js', function(req, res){
   res.sendFile(req.path, {root: "../client/"});
+}).get('*.css', function(req, res){
+  res.sendFile(req.path, {root: "../client/"});
 }).get('/status/:type?', function(req, res){
 
   function clone(a) { return JSON.parse(JSON.stringify(a));}
