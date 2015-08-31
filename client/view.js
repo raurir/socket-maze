@@ -75,13 +75,16 @@ function render(playerPositions) {
   // con.log("playerPositions[i];", playerPositions);
 
   for (var i = 0; i < playerPositions.length; i++) {
-    var player = playerPositions[i];
-    if (player) {
+    var position = playerPositions[i];
+    if (position) {
 
+      // con.log("view render", position);
       // ctx.fillStyle = "rgba(0,0,0,0.5)";
       // ctx.fillRect(player.position.x, player.position.y, cursor, cursor);
-      ctx.fillStyle = "rgba(" + [player.colour.r, player.colour.g, player.colour.b, 1] + ")";
-      ctx.fillRect(player.position.x, player.position.y, cursor, cursor);
+      // var r = player.colour.r, g = player.colour.g, b = player.colour.b;
+      var r = g = b = 100;
+      ctx.fillStyle = "rgba(" + [r, g, b, 1] + ")";
+      ctx.fillRect(position.x, position.y, cursor, cursor);
     }
   };
 

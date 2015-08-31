@@ -1,8 +1,6 @@
 var controller = function(view) {
 
-var position = {x: 0, y: 0};
-var startPosition = {};
-var lastPosition;
+var position, lastPosition;
 
 var mask = null;
 
@@ -66,15 +64,17 @@ function calc(gameID) {
 
 
 function init(gameData, _mask) {
-  var playerData = gameData.
   mask = _mask;
-  view.msg("Welcome player: " + playerData.index);
 
-  con.log("controller init - playerData:", playerData);
+  var playerIndex = gameData.player.index;
+  view.msg("Welcome player: " + playerIndex);
 
-  return
-  position = {x: startPosition.x, y: startPosition.y};
-  lastPosition = {x: startPosition.x, y: startPosition.y};
+  con.log("controller init - gameData:", gameData);
+
+  var pos = gameData.game.positions[playerIndex];
+
+  position = {x: pos.x, y: pos.y};
+  lastPosition = {x: pos.x, y: pos.y};
 
   checkPosition(position);
 
@@ -82,14 +82,12 @@ function init(gameData, _mask) {
 
   // playerPositions[playerData.index] = playerData;
 
-
 }
 
 
 return {
   calc: calc,
   init: init,
-
 }
 
 
