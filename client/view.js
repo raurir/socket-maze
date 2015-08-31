@@ -67,13 +67,13 @@ function error(colour, x, y, w, h) {
 }
 
 
-function render(playerPositions) {
+function render(time, playerPositions) {
   ctx.clearRect(0, 0, sw, sh);
   ctx.drawImage(labyrinthCanvas, 0, 0);
-  renderPlayers(playerPositions);
+  renderPlayers(time, playerPositions);
 }
 
-function renderPlayers(playerPositions) {
+function renderPlayers(time, playerPositions) {
   for (var i = 0, il = playerPositions.length; i < il; i++) {
     var player = playerPositions[i];
     // con.log("view render", position);
@@ -87,18 +87,26 @@ function renderPlayers(playerPositions) {
     var circleRads = Math.PI * 2;
     ctx.strokeStyle = ctx.fillStyle;
     ctx.beginPath();
-    ctx.arc(player.position.x, player.position.y, pingSize, 0, circleRads, false);
+    ctx.arc(player.position.x + cursor / 2, player.position.y + cursor / 2, pingSize, 0, circleRads, false);
     ctx.closePath();
     ctx.stroke();
 
   };
-  pingSize -= pingSize * 0.1;
+  // ping is no longer a ping :)
+  if (time - pingTriggerTime > 1000) {
+    pingSize = 5;
+    pingTriggerTime = time;
+  }
+  pingSize += 2;
+  // pingSize -= pingSize * 0.1;
+  // pingSize = ((Math.sin(time * 0.001) + 1) * sw / 2) + 1;
 }
 
 var pingSize = 0;
+var pingTriggerTime = 0;
 function playerPing(pingDetails) {
   con.log('ping');
-  pingSize = 100;
+  // pingSize = 100;
 }
 
 return {

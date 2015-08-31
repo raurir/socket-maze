@@ -33,9 +33,9 @@ function gameReady(res) {
   gameRunning = true;
 }
 
-function gameLoop() {
+function gameLoop(t) {
   if (gameRunning) {
-    view.render(playerPositions);
+    view.render(t, playerPositions);
     controller.calc(gameID);
   }
   requestAnimationFrame(gameLoop);
@@ -52,7 +52,7 @@ sockets = sockets({
   onWelcome: function(res) {
     con.log("onWelcome", res);
     games = res.games;
-    gameLoop();
+    gameLoop(0);
   },
 
   onGameCreated: function(res) {

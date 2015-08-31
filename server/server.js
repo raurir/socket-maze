@@ -219,7 +219,7 @@ app.get('/', function(req, res){
     case "games" : response.games = games; break;
     default : response = {connections: clone(connections), games: clone(games)}; break;
   }
-  if (response.games) { var i = 0; while(response.games[i]) { response.games[i++].maze = "maze-blanked"; }; }
+  // if (response.games) { var i = 0; while(response.games[i]) { response.games[i++].maze = "maze-blanked"; }; }
   res.end(JSON.stringify(response));
 });
 

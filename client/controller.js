@@ -62,7 +62,7 @@ function calc(gameID) {
   }
 
   
-  // view.renderPlayers([{position: position, id: 3, colour: {r: 30, g: 30, b: 200}}]);
+  // view.renderPlayers(time, [{position: position, id: 3, colour: {r: 30, g: 30, b: 200}}]);
   
 
   lastPosition.x = position.x;
