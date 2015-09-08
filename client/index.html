@@ -1,31 +1,57 @@
 <html>
+<head>
+  <title>Socket Maze</title>
+  <link rel='stylesheet' type="text/css" href='socketmaze.css'/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
 <body>
-<style>
-body { margin:0; padding:0; }
-canvas {
-	border: 1px solid black; 
-	image-rendering: pixelated;
-}
-</style>
+
+
+<div id="overlay">
+  <h2>Overlay</h2>
+  <div id="overlay_choices"></div>
+  <button id="overlay_confirm">Confirm</button>
+</div>
+
+
+<div>
+  <button id="newgame">New game</button>
+  <button id="joingame">Join game</button>
+</div>
+
+
 
 <canvas id="c"></canvas>
-<div id="messages"></div>
-<input type="text" id="m"></input>
-<button id="send">Send</button>
-<div id="output"></button>
+<div id="game-status">Status</div>
+<div>
 
-Tilt tolerance: <input type="number" id="tiltTolerance"></input><br>
-Tile speed: <input type="number" id="tiltSpeed"></input><br>
-<button id="keyboard">Keyboard</button>
-<button id="tilt">Tilt</button>
-<button id="reset">Reset player</button>
+  <div id="comms">
+    <div id="messages"></div>
+    <input type="text" id="m"></input>
+    <button id="send">Send</button>
+    <div id="output"></button>
+  </div>
 
+  <div id="control-test">
+    Tilt tolerance: <input type="number" id="tiltTolerance"></input><br>
+    Tile speed: <input type="number" id="tiltSpeed"></input><br>
+  </div>
 
-<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-<!-- <script src="maze.js"></script> -->
+  <button id="keyboard">Keyboard</button>
+  <button id="tilt">Tilt</button>
+  <button id="reset">Reset player</button>
+</div>
+
+<!-- <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script> -->
+<script src="socket.io-1.2.0.js"></script>
 <script src="constants.js"></script>
+<script src="controller.js"></script>
 <script src="sockets.js"></script>
+<script src="view.js"></script>
+<script src="view_overlay.js"></script>
+<script src="user_input.js"></script>
 <script src="client.js"></script>
+<!-- <script src="test_arr_obj.js"></script> -->
 
 </body>
 
