@@ -149,7 +149,7 @@ io.on('connection', function(socket){
   });
 
   socket.on('moved', function(move){
-    con.log("moved", move, playerIndex);
+    // con.log("moved", move, playerIndex);
     // var room = getRoom(move.gameID);
     var room = getRoom(gameID);
 

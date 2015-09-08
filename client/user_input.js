@@ -1,32 +1,59 @@
 var userInput = function() {
 
 var userInput = 'ontouchstart' in document.documentElement ? "tilt" : "keyboard";
-var tiltTolerance = 5;
-var tiltSpeed = 0.2;
+var tiltTolerance = 2;
+var tiltMax = 3;
+var tiltSpeed = 1;
 
 el("tiltTolerance").value = tiltTolerance;
 el("tiltSpeed").value = tiltSpeed;
 
 
 
-function tilt(y, x) {
-  if (userInput == "keyboard") return;
-  keysDown.left = (x < tiltTolerance ? -x : 0) * tiltSpeed;
-  keysDown.right =( x > tiltTolerance ? x : 0) * tiltSpeed;
-  keysDown.up = (y < tiltTolerance ? -y : 0) * tiltSpeed;
-  keysDown.down =( y > tiltTolerance ? y : 0) * tiltSpeed;
+function tilt(x, y) {
+
+  function getTilt(val) {
+    var clamped = val;
+    // if (Math.abs(clamped) < tiltTolerance) {
+    //   clamped = 0;
+    // } else if (clamped > tiltMax) {
+    //   clamped = tiltMax - tiltTolerance;;
+    // } else if (clamped < -tiltMax) {
+    //   clamped = -tiltMax + tiltTolerance;
+    // } else if (clamped > 0) {
+    //   clamped = clamped - tiltTolerance;
+    // } else if (clamped < 0) {
+    //   clamped = clamped + tiltTolerance;
+    // }
+    if (clamped > tiltTolerance) {
+      clamped = tiltSpeed;
+    } else {
+      clamped = 0;
+    }
+    return clamped;
+  }
+
+  if (userInput == "tilt") {
+    keysDown.left = getTilt(-y);
+    keysDown.right = getTilt(y);
+    keysDown.up = getTilt(-x);
+    keysDown.down = getTilt(x);
+    view.log([keysDown.up, keysDown.right, keysDown.down, keysDown.left]);
+  }
 };
 
 function keyboard(e) {
-  if (userInput == "tilt") return;
-  var pressed = e.type === "keydown" ? 1 : 0;
-  switch (e.which) {
-    case 37 : case 100 : keysDown.left = pressed; break;
-    case 38 : case 104 : keysDown.up = pressed; break;
-    case 39 : case 102 : keysDown.right = pressed; break;
-    case 40 : case 98 : keysDown.down = pressed; break;
+  if (userInput == "keyboard") {
+    var pressed = e.type === "keydown" ? 1 : 0;
+    switch (e.which) {
+      case 37 : case 100 : keysDown.left = pressed; break;
+      case 38 : case 104 : keysDown.up = pressed; break;
+      case 39 : case 102 : keysDown.right = pressed; break;
+      case 40 : case 98 : keysDown.down = pressed; break;
+    }
+    // con.log(e.which, pressed);
+    view.log(pressed);
   }
-  // con.log(e.which, pressed);
 };
 
 function touch(e, isOn) {

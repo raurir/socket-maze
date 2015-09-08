@@ -37,7 +37,7 @@ canvas {
 #control-test {
   display: none;
 }
-#messages {
+#messages, #output {
   color: white;
 }
 @media screen and (max-width: 500px) {
