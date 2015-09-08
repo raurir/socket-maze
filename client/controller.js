@@ -48,10 +48,11 @@ function calc(gameID) {
   if (keysDown.up && directionsOk.up) newPosition.y -= keysDown.up;
   if (keysDown.down && directionsOk.down) newPosition.y += keysDown.down;
 
-  // output.innerHTML = [keysDown.left, directionsOk.left];
+  // output.innerHTML = [keysDown.left, directionsOk.left, position.x, newPosition.x];
 
   position.x = Math.round(newPosition.x);
   position.y = Math.round(newPosition.y);
+
 
   if (position.x != lastPosition.x || position.y != lastPosition.y) {
     sockets.move(gameID, position);
@@ -61,9 +62,9 @@ function calc(gameID) {
     }
   }
 
-  
+
   // view.renderPlayers(time, [{position: position, id: 3, colour: {r: 30, g: 30, b: 200}}]);
-  
+
 
   lastPosition.x = position.x;
   lastPosition.y = position.y;
