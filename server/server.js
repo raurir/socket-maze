@@ -14,6 +14,47 @@ var game = maze();
 
 var connections = [];
 var games = [];
+var gameEmitTimes = [];
+var gameIntervals = [];
+
+
+  function getRoom(id) {
+    return "game_" + id;
+  }
+
+
+
+function checkIntervals() {
+
+
+  var now = new Date().getTime();
+  var maxEmits = 1000 / 2;
+
+  for (var i = 0, il = gameEmitTimes.length; i < il; i++) {
+
+    var emitTime = now - gameEmitTimes[i];
+    if (emitTime > maxEmits) {
+      con.log("should ping this game", emitTime, maxEmits, i);
+
+      var room = getRoom(i);
+
+      io.to(room).emit('moved', {
+        players: games[i].players
+      });
+      gameEmitTimes[i] = now;
+
+    }
+
+  };
+
+
+    // con.log("ok!", emitTime);
+
+
+}
+
+setInterval(checkIntervals, 500);
+
 
 io.on('connection', function(socket){
   var connectionID = socket.conn.id;
@@ -33,9 +74,6 @@ io.on('connection', function(socket){
       player: {colour: colour, index: playerIndex},
     };
   };
-  function getRoom(id) {
-    return "game_" + id;
-  }
 
 
 
@@ -128,6 +166,9 @@ io.on('connection', function(socket){
       };
       addPlayer();
 
+      gameEmitTimes[gameID] = new Date().getTime();
+      // gameIntervals[gameID] = setInterval(checkIntervals, 300);
+
       socket.join(room);
       io.to(room).emit('game_created', getGame());
     });
@@ -148,6 +189,11 @@ io.on('connection', function(socket){
     // socket.broadcast.to(id).emit('my message', msg);
   });
 
+
+
+
+
+
   socket.on('moved', function(move){
     // con.log("moved", move, playerIndex);
     // var room = getRoom(move.gameID);
@@ -160,13 +206,25 @@ io.on('connection', function(socket){
     };
     games[gameID].playerIndexes[playerIndex] = connectionID;
 
-    io.to(room).emit('moved', {
-      players: games[move.gameID].players
-      // position: move.position,
-      // colour: colour,
-      // id: connectionID,
-      // playerIndex: playerIndex
-    });
+    var now = new Date().getTime();
+    var maxEmits = 1000 / 2;
+    var emitTime = now - gameEmitTimes[gameID];
+    if (emitTime > maxEmits) {
+      io.to(room).emit('moved', {
+        players: games[move.gameID].players
+        // position: move.position,
+        // colour: colour,
+        // id: connectionID,
+        // playerIndex: playerIndex
+      });
+      gameEmitTimes[gameID] = now;
+      con.log("ok!", emitTime);
+    } else {
+      con.log("too soon!", emitTime);
+
+    }
+
+
   });
 
   socket.on('player_ping', function(pingDetails){
