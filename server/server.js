@@ -24,7 +24,7 @@ io.on('connection', function(socket){
 
   var colour = {r: col(), g: col(), b: col()};
   function col() {
-    return Math.round(Math.random() * 255);
+    return Math.round(100 + Math.random() * 155);
   }
   function getGame() {
     return {
@@ -41,14 +41,14 @@ io.on('connection', function(socket){
 
   function getPlayerStart() {
     var pos = {};
-    con.log("getPlayerStart", playerIndex);
     var offset = constants.cursor / 2;
-    switch(playerIndex) {
+    switch(playerIndex % 4) {
       case 0 : pos = {x: -offset + constants.block * 2, y: -offset + constants.block * 2}; break;
       case 1 : pos = {x: -offset + constants.sw - constants.block * 2 , y: -offset + constants.block * 2}; break;
       case 2 : pos = {x: -offset + constants.sw - constants.block * 2 , y: -offset + constants.sh - constants.block * 2}; break;
       case 3 : pos = {x: -offset + constants.block * 2 , y: -offset + constants.sh - constants.block * 2}; break;
     }
+    con.log("getPlayerStart", playerIndex, pos);
     return pos;
   }
 

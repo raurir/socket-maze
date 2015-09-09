@@ -27,6 +27,7 @@ function remove(target, eventNames, callback) {
 }
 
 function gameReady(res) {
+  if (gameRunning) return;
   var mask = view.init(res.game, function(mask) {
     gameID = res.game.id;
     controller.init(res, mask);
