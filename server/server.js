@@ -15,42 +15,72 @@ var game = maze();
 var connections = [];
 var games = [];
 var gameEmitTimes = [];
-var gameIntervals = [];
+
+var maxEmits = 1000 / 2;
+
+var colour = function() {
+  function col() { return Math.round(100 + Math.random() * 155); };
+  return {r: col(), g: col(), b: col()};
+}
 
 
-  function getRoom(id) {
-    return "game_" + id;
+
+function getRoom(id) {
+  return "game_" + id;
+}
+
+
+function removePlayer(gameID, connectionID) {
+  if (games[gameID]) {
+    var index = games[gameID].playerIndexes.indexOf(connectionID);
+    if (index == -1) {
+      con.log("removePlayer player not in game", gameID);
+    } else {
+      games[gameID].playerIndexes.splice(index, 1);
+      games[gameID].players.splice(index, 1);
+      con.log("removePlayer", index);
+      if (games[gameID].players.length == 0) {
+        con.log("everyone has left the game")
+        games.splice(gameID, 1);
+        gameEmitTimes.splice(gameID, 1);
+      }
+
+    }
+  } else {
+    con.log("removePlayer no game defined - gameID:", gameID);
   }
+}
+
+function getPlayerStart(playerIndex) {
+  var pos = {};
+  var offset = constants.cursor / 2;
+  switch(playerIndex % 4) {
+    case 0 : pos = {x: -offset + constants.block * 2, y: -offset + constants.block * 2}; break;
+    case 1 : pos = {x: -offset + constants.sw - constants.block * 2 , y: -offset + constants.block * 2}; break;
+    case 2 : pos = {x: -offset + constants.sw - constants.block * 2 , y: -offset + constants.sh - constants.block * 2}; break;
+    case 3 : pos = {x: -offset + constants.block * 2 , y: -offset + constants.sh - constants.block * 2}; break;
+  }
+  con.log("getPlayerStart", playerIndex, pos);
+  return pos;
+}
+
 
 
 
 function checkIntervals() {
-
-
   var now = new Date().getTime();
-  var maxEmits = 1000 / 2;
-
   for (var i = 0, il = gameEmitTimes.length; i < il; i++) {
-
     var emitTime = now - gameEmitTimes[i];
     if (emitTime > maxEmits) {
       con.log("should ping this game", emitTime, maxEmits, i);
-
       var room = getRoom(i);
-
       io.to(room).emit('moved', {
         players: games[i].players
       });
       gameEmitTimes[i] = now;
-
     }
-
   };
-
-
     // con.log("ok!", emitTime);
-
-
 }
 
 setInterval(checkIntervals, 500);
@@ -63,83 +93,50 @@ io.on('connection', function(socket){
 
   con.log('a user connected', connectionID);
 
-  var colour = {r: col(), g: col(), b: col()};
-  function col() {
-    return Math.round(100 + Math.random() * 155);
+  var playerColour = colour();
+
+
+
+
+
+function addPlayer(gameID, connectionID) {
+  if (games[gameID]) {
+    if (games[gameID].playerIndexes.indexOf(connectionID) == -1) {
+      games[gameID].playerIndexes.push(connectionID);
+      playerIndex = games[gameID].playerIndexes.indexOf(connectionID);
+
+      games[gameID].players[playerIndex] = {
+        id: connectionID,
+        position: getPlayerStart(playerIndex),
+        colour: colour()
+      }
+
+    } else {
+      con.log("addPlayer player already in game", gameID);
+    }
+  } else {
+    con.log("addPlayer no game defined - gameID:", gameID);
   }
+
+}
+
+
+
+
+
+
+
+
+
+
+
   function getGame() {
     return {
       games: games,
       game: games[gameID],
-      player: {colour: colour, index: playerIndex},
+      player: {colour: playerColour, index: playerIndex},
     };
   };
-
-
-
-  function getPlayerStart() {
-    var pos = {};
-    var offset = constants.cursor / 2;
-    switch(playerIndex % 4) {
-      case 0 : pos = {x: -offset + constants.block * 2, y: -offset + constants.block * 2}; break;
-      case 1 : pos = {x: -offset + constants.sw - constants.block * 2 , y: -offset + constants.block * 2}; break;
-      case 2 : pos = {x: -offset + constants.sw - constants.block * 2 , y: -offset + constants.sh - constants.block * 2}; break;
-      case 3 : pos = {x: -offset + constants.block * 2 , y: -offset + constants.sh - constants.block * 2}; break;
-    }
-    con.log("getPlayerStart", playerIndex, pos);
-    return pos;
-  }
-
-
-
-
-
-
-
-
-
-
-  function addPlayer() {
-    if (games[gameID]) {
-      if (games[gameID].playerIndexes.indexOf(connectionID) == -1) {
-        games[gameID].playerIndexes.push(connectionID);
-        playerIndex = games[gameID].playerIndexes.indexOf(connectionID);
-
-        games[gameID].players[playerIndex] = {
-          id: connectionID,
-          position: getPlayerStart(),
-          colour: colour
-        }
-
-      } else {
-        con.log("addPlayer player already in game", gameID);
-      }
-    } else {
-      con.log("addPlayer no game defined - gameID:", gameID);
-    }
-
-  }
-
-  function removePlayer() {
-    if (games[gameID]) {
-      var index = games[gameID].playerIndexes.indexOf(connectionID);
-      if (index == -1) {
-        con.log("removePlayer player not in game", gameID);
-      } else {
-        games[gameID].playerIndexes.splice(index, 1);
-        games[gameID].players.splice(index, 1);
-        con.log("removePlayer", index);
-        if (games[gameID].players.length == 0) {
-          con.log("everyone has left the game")
-          games.splice(gameID, 1);
-        }
-
-      }
-    } else {
-      con.log("removePlayer no game defined - gameID:", gameID);
-    }
-  }
-
 
   connections.push(connectionID);
 
@@ -157,17 +154,16 @@ io.on('connection', function(socket){
       con.log("new_game created", room, labyrinth.length);
       games[gameID] = {
         id: gameID,
-        colour: {r: col(), g: col(), b: col()},
+        colour: colour(),
         maze: labyrinth,
         room: room,
         maxPlayers: params.players,
         players: [],
         playerIndexes: []
       };
-      addPlayer();
+      addPlayer(gameID, connectionID);
 
       gameEmitTimes[gameID] = new Date().getTime();
-      // gameIntervals[gameID] = setInterval(checkIntervals, 300);
 
       socket.join(room);
       io.to(room).emit('game_created', getGame());
@@ -178,7 +174,7 @@ io.on('connection', function(socket){
     gameID = id;
     con.log("join_game", gameID);
     var room = getRoom(gameID);
-    addPlayer();
+    addPlayer(gameID, connectionID);
     socket.join(room);
     io.to(room).emit('game_joined', getGame());
   });
@@ -202,7 +198,7 @@ io.on('connection', function(socket){
     games[gameID].players[playerIndex] = {
       id: connectionID,
       position: move.position,
-      colour: colour
+      colour: playerColour
     };
     games[gameID].playerIndexes[playerIndex] = connectionID;
 
@@ -212,10 +208,6 @@ io.on('connection', function(socket){
     if (emitTime > maxEmits) {
       io.to(room).emit('moved', {
         players: games[move.gameID].players
-        // position: move.position,
-        // colour: colour,
-        // id: connectionID,
-        // playerIndex: playerIndex
       });
       gameEmitTimes[gameID] = now;
       con.log("ok!", emitTime);
@@ -237,7 +229,7 @@ io.on('connection', function(socket){
 
   socket.on('disconnect', function(){
     console.log('user disconnected', connectionID);
-    removePlayer();
+    removePlayer(gameID, connectionID);
     connections.splice(connections.indexOf(connectionID), 1);
     connectionID = null;
 
