@@ -12,6 +12,13 @@ function checkPosition(pos) {
   function checkRow(x, y) {
     var ok = true;
     for (var i = 0; i < cursor; i++) {
+
+      try {
+        if (mask[y][x + i]) var b = true;
+      } catch(err) {
+        con.warn(y, x, error);
+      }
+
       if (mask[y][x + i]) { ok = false; error(y, x + i); } else { good(y, x + i); }
     };
     return ok;
