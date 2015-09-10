@@ -21,6 +21,14 @@ io.on('connection', function(socket){
   var gameID = null;
 
   con.log('a user connected', connectionID);
+  var address = socket.handshake.address;
+  console.log("New connection from " + address);
+
+
+  con.log("----------");
+  con.log(socket.handshake);
+  con.log("----------");
+
 
   var colour = {r: col(), g: col(), b: col()};
   function col() {

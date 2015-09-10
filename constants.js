@@ -1,7 +1,7 @@
 var constants = {
-  block: 8,
-  cols: 24,
-  rows: 24
+  block: 10,
+  cols: 32,
+  rows: 32
 }
 constants.sw = constants.block * constants.cols;
 constants.sh = constants.block * constants.rows;

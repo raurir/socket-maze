@@ -1,8 +1,8 @@
 var userInput = function() {
 
 var userInput = 'ontouchstart' in document.documentElement ? "tilt" : "keyboard";
-var tiltTolerance = 2;
-var tiltMax = 3;
+var tiltTolerance = 4;
+// var tiltMax = 3;
 var tiltSpeed = 1;
 
 el("tiltTolerance").value = tiltTolerance;
