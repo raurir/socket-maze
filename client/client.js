@@ -27,10 +27,12 @@ function remove(target, eventNames, callback) {
 }
 
 function gameReady(res) {
-  var mask = view.init(res.game);
-  gameID = res.game.id;
-  controller.init(res, mask);
-  gameRunning = true;
+  if (gameRunning) return;
+  var mask = view.init(res.game, function(mask) {
+    gameID = res.game.id;
+    controller.init(res, mask);
+    gameRunning = true;
+  });
 }
 
 function gameLoop(t) {

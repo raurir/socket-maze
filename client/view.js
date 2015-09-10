@@ -16,12 +16,11 @@ function msg(msg) {
   el("messages").innerHTML += msg + "<br>";
 }
 
-function init(game) {
+function init(game, callback) {
   con.log("init", game);
   drawStatus(game);
   pixelMask(game.maze);
-  drawMaze(game.colour);
-  return mask;
+  drawMaze(game.colour, callback);
 }
 
 function drawStatus(game) {
@@ -45,20 +44,42 @@ function pixelMask(labyrinth) {
 }
 
 
-function drawMaze(colour) {
+function drawMaze(colour, callback) {
+  var st = new Date().getTime();
+
   labyrinthCanvas = document.createElement("canvas");
   labyrinthCanvas.width = sw;
   labyrinthCanvas.height = sh;
-  var ctx = labyrinthCanvas.getContext("2d");
+  var labCtx = labyrinthCanvas.getContext("2d");
 
-  for (var y = 0; y < sh; y++) {
+  var rows = sh, row = 0;
+
+  function drawRow(y) {
+    // con.log("drawRow", y);
     for (var x = 0; x < sw; x++) {
-      // mask.push( labyrinth[yi][xi] === "#" );
-      var a = Math.random() * 0.3 + (mask[y][x] ? 0.6 : 0.2);
-      ctx.fillStyle = "rgba(" + [colour.r, colour.g, colour.b, a] + ")";
-      ctx.fillRect(x, y, 1, 1);
+      drawBlock(x, y);
+    }
+    row++;
+    if (row < rows) {
+      setTimeout(function() {
+        drawRow(row);
+        ctx.drawImage(labyrinthCanvas, 0, 0);
+      }, 10);
+    } else {
+      var et = new Date().getTime();
+      view.msg("proc time: " + (et - st) + " calculations: " + (sw * sh));
+      callback(mask);
     }
   }
+
+  function drawBlock(x, y) {
+    var a = Math.random() * 0.3 + (mask[y][x] ? 0.6 : 0.2);
+    labCtx.fillStyle = "rgb(" + [Math.round(colour.r * a), Math.round(colour.g * a), Math.round(colour.b * a)] + ")";
+    labCtx.fillRect(x, y, 1, 1);
+  }
+
+  drawRow(row);
+
 }
 
 function error(colour, x, y, w, h) {
@@ -83,7 +104,7 @@ function renderPlayers(time, playerPositions) {
     // var r = g = b = 100;
     ctx.fillStyle = "rgba(" + [r, g, b, 1] + ")";
     ctx.fillRect(player.position.x, player.position.y, cursor, cursor);
-    
+
     var circleRads = Math.PI * 2;
     ctx.strokeStyle = ctx.fillStyle;
     ctx.beginPath();
