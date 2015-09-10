@@ -99,13 +99,9 @@ io.on('connection', function(socket){
   var address = socket.handshake.address;
   console.log("New connection from " + address);
 
-
-  con.log("----------");
-  con.log(socket.handshake);
-  con.log("----------");
-
-
-
+  // con.log("----------");
+  // con.log(socket.handshake);
+  // con.log("----------");
 
   function addPlayer(gameID, connectionID) {
     if (games[gameID]) {
