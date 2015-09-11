@@ -64,18 +64,27 @@ function getPlayerStart(playerIndex) {
 }
 
 
-
+function gameMove(gameID) {
+  if (games[gameID]) {
+    return {
+      players: games[gameID].players,
+      flag: games[gameID].flag
+    }
+  } else {
+    con.warn("gameMove called but no game with id:", gameID);
+    return {};
+  }
+}
 
 function checkIntervals() {
   var now = new Date().getTime();
   for (var i = 0, il = gameEmitTimes.length; i < il; i++) {
     var emitTime = now - gameEmitTimes[i];
     if (emitTime > maxEmits) {
-      con.log("should ping this game", emitTime, maxEmits, i);
+      // TODO check ping is necessary.
+      // con.log("should ping this game", emitTime, maxEmits, i);
       var room = getRoom(i);
-      io.to(room).emit('moved', {
-        players: games[i].players
-      });
+      io.to(room).emit('moved', gameMove(i));
       gameEmitTimes[i] = now;
     }
   };
@@ -163,7 +172,14 @@ io.on('connection', function(socket){
         room: room,
         maxPlayers: params.players,
         players: [],
-        playerIndexes: []
+        playerIndexes: [],
+        flag: {
+          ownder: null,
+          position: {
+            x: constants.sw / 2,
+            y: constants.sh / 2
+          }
+        }
       };
       addPlayer(gameID, connectionID);
 
@@ -206,13 +222,26 @@ io.on('connection', function(socket){
     };
     games[gameID].playerIndexes[playerIndex] = connectionID;
 
+
+    if (games[gameID].flag.owner === playerIndex) {
+      games[gameID].flag.position = move.position;
+    } else {
+      var pickupDistance = constants.cursor;
+      var dx = games[gameID].flag.position.x - move.position.x;
+      var dy = games[gameID].flag.position.y - move.position.y;
+
+      if (Math.sqrt(dx * dx + dy * dy) < pickupDistance) {
+        games[gameID].flag.owner = playerIndex;
+        games[gameID].flag.position = move.position;
+      }
+    }
+
+
     var now = new Date().getTime();
     var maxEmits = 1000 / 2;
     var emitTime = now - gameEmitTimes[gameID];
     if (emitTime > maxEmits) {
-      io.to(room).emit('moved', {
-        players: games[move.gameID].players
-      });
+      io.to(room).emit('moved', gameMove(gameID));
       gameEmitTimes[gameID] = now;
       con.log("ok!", emitTime);
     } else {

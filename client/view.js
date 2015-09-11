@@ -6,6 +6,7 @@ canvas.height = sh;
 // canvas.style.width = canvas.style.height = sw * 10 + "px";
 var ctx = canvas.getContext("2d");
 var labyrinthCanvas = null;
+var circleRads = Math.PI * 2;
 
 var mask = [];
 
@@ -61,10 +62,13 @@ function drawMaze(colour, callback) {
     }
     row++;
     if (row < rows) {
-      setTimeout(function() {
-        drawRow(row);
-        ctx.drawImage(labyrinthCanvas, 0, 0);
-      }, 10);
+      // setTimeout(function() {
+      //   drawRow(row);
+      //   ctx.drawImage(labyrinthCanvas, 0, 0);
+      // }, 1);
+      drawRow(row);
+      ctx.drawImage(labyrinthCanvas, 0, 0);
+
     } else {
       var et = new Date().getTime();
       view.msg("proc time: " + (et - st) + " calculations: " + (sw * sh));
@@ -88,10 +92,11 @@ function error(colour, x, y, w, h) {
 }
 
 
-function render(time, playerPositions) {
+function render(time, playerPositions, flagPosition) {
   ctx.clearRect(0, 0, sw, sh);
   ctx.drawImage(labyrinthCanvas, 0, 0);
   renderPlayers(time, playerPositions);
+  renderFlag(time, flagPosition);
 }
 
 function renderPlayers(time, playerPositions) {
@@ -104,8 +109,6 @@ function renderPlayers(time, playerPositions) {
     // var r = g = b = 100;
     ctx.fillStyle = "rgba(" + [r, g, b, 1] + ")";
     ctx.fillRect(player.position.x, player.position.y, cursor, cursor);
-
-    var circleRads = Math.PI * 2;
     ctx.strokeStyle = ctx.fillStyle;
     ctx.beginPath();
     ctx.arc(player.position.x + cursor / 2, player.position.y + cursor / 2, pingSize, 0, circleRads, false);
@@ -121,6 +124,16 @@ function renderPlayers(time, playerPositions) {
   pingSize += 2;
   // pingSize -= pingSize * 0.1;
   // pingSize = ((Math.sin(time * 0.001) + 1) * sw / 2) + 1;
+}
+
+function renderFlag(time, flagPosition) {
+  ctx.fillStyle = "rgba(255,0,0,0.5)";
+  ctx.strokeStyle = "rgba(255,0,0,1)";
+  ctx.beginPath();
+  ctx.arc(flagPosition.x + cursor / 2, flagPosition.y + cursor / 2, cursor, 0, circleRads, false);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.fill();
 }
 
 var pingSize = 0;

@@ -8,6 +8,7 @@ function el(id) {
 var sw = constants.sw, sh = constants.sh, cursor = constants.cursor;;
 
 var playerPositions = [];
+var flagPosition = {};
 var keysDown = { up: false, down: false, left: false, right: false};
 
 var games = [];
@@ -37,7 +38,7 @@ function gameReady(res) {
 
 function gameLoop(t) {
   if (gameRunning) {
-    view.render(t, playerPositions);
+    view.render(t, playerPositions, flagPosition);
     controller.calc(gameID);
   }
   requestAnimationFrame(gameLoop);
@@ -73,11 +74,12 @@ sockets = sockets({
   },
 
   onMessage: view.msg,
-  onMove: function(playerMove){
-    // con.log("onMove", playerMove);
+  onMove: function(move){
+    // con.log("onMove", move);
+    flagPosition = move.flag.position;
     // con.log("moved", msg);
     // playerPositions[playerMove.playerIndex] = playerMove;
-    playerPositions = playerMove.players;
+    playerPositions = move.players;
   },
 
   onPlayerPing: function(pingDetails){
