@@ -16,7 +16,7 @@ var connections = [];
 var games = [];
 var gameEmitTimes = [];
 
-var maxEmits = 1000 / 2;
+var maxEmits = 1000 / 10;
 
 var colour = function() {
   function col() { return Math.round(100 + Math.random() * 155); };

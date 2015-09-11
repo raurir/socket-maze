@@ -7,7 +7,7 @@ var mask = null;
 function checkPosition(pos) {
 
   function error(y, x) { view.error("red", x, y, 1, 1); }
-  function good(y, x) { view.error("black", x, y, 1, 1); }
+  function good(y, x) { view.error("white", x, y, 1, 1); }
 
   function checkRow(x, y) {
     var ok = true;
